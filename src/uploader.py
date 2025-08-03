@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer  # ✅ New import
 # Load environment variables
 load_dotenv()
 
-CLUSTER_URL = "https://c2b883ba-be1e-482f-813d-bf7d79b3cb48.europe-west3-0.gcp.cloud.qdrant.io"
+CLUSTER_URL = "add yours"
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_collection")
 
