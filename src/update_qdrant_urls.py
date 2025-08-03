@@ -8,7 +8,7 @@ from kaggle_secrets import UserSecretsClient
 # --- Kaggle Setup ---
 user_secrets = UserSecretsClient()
 QDRANT_API_KEY = user_secrets.get_secret("QDRANT_API_KEY")
-CLUSTER_URL = "https://c2b883ba-be1e-482f-813d-bf7d79b3cb48.europe-west3-0.gcp.cloud.qdrant.io"
+CLUSTER_URL = "add yours"
 COLLECTION_NAME = "my_collection"
 
 # --- Initialize Models ---
