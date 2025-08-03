@@ -1,0 +1,565 @@
+/* General Styles */
+:root {
+  --primary-color: #ff6b8b;
+  --secondary-color: #ffb8c6;
+  --accent-color: #ff4757;
+  --light-color: #fff5f7;
+  --dark-color: #3d3d3d;
+  --text-color: #333;
+  --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #fff5f7 0%, #ffecef 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: var(--text-color);
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  padding: 30px;
+  background-color: white;
+  box-shadow: var(--card-shadow);
+  border-radius: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.header::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  margin: 15px auto;
+  border-radius: 2px;
+}
+
+h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--dark-color);
+  font-size: 1rem;
+  margin-top: 0;
+  opacity: 0.8;
+}
+
+/* Chat Window */
+#chatWindow {
+  margin-bottom: 30px;
+  min-height: 200px;
+}
+
+#userMessageContainer, #responseContainer {
+  margin-bottom: 20px;
+}
+
+.chat-message {
+  padding: 15px 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  max-width: 80%;
+  display: inline-block;
+  position: relative;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.user-message {
+  background-color: var(--primary-color);
+  color: white;
+  border-bottom-right-radius: 5px;
+  float: right;
+  text-align: left;
+}
+
+.response-message {
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  border-bottom-left-radius: 5px;
+  float: left;
+  text-align: left;
+}
+
+/* Search Form */
+#searchForm {
+  margin-top: 40px;
+}
+
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+input[type="text"] {
+  padding: 15px 25px;
+  font-size: 1rem;
+  width: 100%;
+  border: 2px solid #f0f0f0;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  color: var(--dark-color);
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 107, 139, 0.2);
+}
+
+button {
+  padding: 15px 30px;
+  font-size: 1rem;
+  color: white;
+  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 139, 0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 139, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.quick-searches {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quick-searches span {
+  color: var(--dark-color);
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.quick-search-btn {
+  padding: 8px 15px;
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid var(--secondary-color);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin: 0 5px;
+  transition: all 0.2s ease;
+}
+
+.quick-search-btn:hover {
+  background-color: var(--light-color);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Results Container */
+#results {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 30px;
+  clear: both;
+}
+
+/* Card Container */
+.card {
+  width: 300px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  background: white;
+  display: flex;
+  flex-direction: column;
+  height: 450px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+
+/* Image Container */
+.card-img-container {
+  height: 350px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Image Styling */
+.card-img {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  background: white;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.card:hover .card-img {
+  transform: scale(1.05);
+}
+
+/* Loading Indicator */
+.img-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.9);
+  transition: opacity 0.3s ease;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.card-img.loaded + .img-loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.error-image {
+  object-fit: contain;
+  padding: 20px;
+  background: #fff5f7;
+  border: 2px dashed #ffb8c6;
+  border-radius: 10px;
+  margin: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+/* Card Body */
+.card-body {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.card-title {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: var(--dark-color);
+  font-weight: 600;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-info {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  opacity: 0.8;
+}
+.cart-btns a {
+    display: inline-block;
+    background: #f5f5f5;
+    color: #000;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.cart-btns a:hover {
+    background: #ff6a00;
+    color: #fff;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding: 20px 15px;
+  }
+  
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  button {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .quick-searches {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+  }
+  
+  .card-img-container {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .card-img-container {
+    height: 200px;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-message, .card {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Clearfix for chat messages */
+#userMessageContainer::after,
+#responseContainer::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+
+
+/* General Styles
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: white no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 80%;
+    max-width: 800px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+}
+
+h1 {
+    color: #333;
+}
+
+#chatWindow {
+    margin-bottom: 20px;
+}
+
+#userMessageContainer, #responseContainer {
+    margin-bottom: 10px;
+}
+
+.chat-message {
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    width: 100%;
+    display: none; /* Initially hidden */
+}
+
+.user-message {
+    background-color: #e0f7fa;
+    text-align: right;
+    display: none; /* Hidden by default */
+    padding: 10px;
+    border-radius: 8px;
+    word-wrap: break-word; /* Handle long words */
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
+    margin: 0 auto; /* Center the message container */
+}
+.response-message {
+    background-color: #ffe0b2;
+    text-align: left;
+    padding: 10px;
+    border-radius: 8px;
+    border-radius: 8px;
+    word-wrap: break-word; /* Handle long words */
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
+    margin: 0 auto; /* Center the message container */
+}
+
+form {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    width: 70%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 10px;
+    padding: 10px;
+    display: inline-block;
+    width: calc(33% - 20px); /* Three cards per row with margin */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+
+.card-img {
+max-width: 200px;
+height: auto;
+display: block;
+border: 1px solid #ddd;
+}
+
+
+.card-body {
+    padding: 10px;
+}
+
+.card-title {
+    font-size: 16px;
+    margin: 0 0 10px;
+}
+
+.card-price {
+    font-size: 14px;
+    color: #f39c12;
+    margin: 0 0 10px;
+}
+
+.card-rating {
+    font-size: 12px;
+    color: #555;
+}
+
+/* Add these new rules */
+.img-container {
+  position: relative;
+  height: 350px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.img-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.8);
+  transition: opacity 0.3s ease;
+}
+
+img.card-img.loaded + .img-loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.error-image {
+  object-fit: contain;
+  padding: 20px;
+  background: #fff5f7;
+}
+
+#results {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+} */
