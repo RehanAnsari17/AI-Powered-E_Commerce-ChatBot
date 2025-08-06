@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Fashion Assistant - 3D Chat Experience</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --ai-gradient: linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #0080ff 100%);
+            --chat-gradient: linear-gradient(135deg, #e9598b 0%, #d63384 50%, #b83d7a 100%);
+            --dark-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --neon-green: #00ff88;
+            --neon-blue: #00ccff;
+            --neon-pink: #ff0080;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --message-bg: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Neural Network Animation */
+        .neural-network {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            animation: nodeGlow 3s ease-in-out infinite;
+        }
+
+        .neural-connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            animation: dataFlow 2s linear infinite;
+        }
+
+        @keyframes nodeGlow {
+            0%, 100% { box-shadow: 0 0 5px var(--neon-green); opacity: 0.7; }
+            50% { box-shadow: 0 0 20px var(--neon-green); opacity: 1; }
+        }
+
+        @keyframes dataFlow {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--ai-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-green);
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Chat Container */
+        .chat-container {
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* AI Assistant Header */
+        .ai-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px 25px 0 0;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--ai-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .ai-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--ai-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ai-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            background: var(--message-bg);
+            backdrop-filter: blur(15px);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 25px;
+            animation: messageSlideIn 0.5s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.ai {
+            text-align: left;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .message.user .message-bubble {
+            background: var(--chat-gradient);
+            color: #fff;
+            border-radius: 20px 20px 5px 20px;
+            box-shadow: 0 8px 25px rgba(233, 89, 139, 0.3);
+        }
+
+        .message.ai .message-bubble {
+            background: var(--ai-gradient);
+            color: #000;
+            border-radius: 20px 20px 20px 5px;
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+            font-weight: 500;
+        }
+
+        .typing-indicator {
+            display: none;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            width: fit-content;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            animation: typingAnimation 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 0 0 25px 25px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-btn:hover {
+            background: var(--ai-gradient);
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .send-btn {
+            background: var(--ai-gradient);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .send-btn:hover {
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+            transform: scale(1.1);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-action:hover {
+            background: var(--ai-gradient);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            padding: 20px;
+            transition: right 0.4s ease;
+            z-index: 2000;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: var(--ai-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-panel {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Recommendations */
+        .recommendation-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.2);
+        }
+
+        .recommendation-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .recommendation-price {
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 10px;
+            }
+            
+            .ai-header {
+                padding: 20px 15px;
+            }
+            
+            .ai-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .ai-name {
+                font-size: 1.5rem;
+            }
+            
+            .chat-messages {
+                padding: 20px 15px;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+                padding: 12px 16px;
+            }
+            
+            .side-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .quick-actions {
+                gap: 8px;
+            }
+            
+            .quick-action {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--ai-gradient);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+    
+    <!-- Neural Network -->
+    <div class="neural-network" id="neuralNetwork"></div>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="logo-3d">
+                        <i class="fa fa-robot"></i>
+                        FashionBot AI Assistant
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="ai-status">
+                        <div class="status-dot"></div>
+                        AI Assistant Online
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="action-btn" onclick="togglePanel()" title="Recommendations">
+                        <i class="fa fa-shopping-bag"></i>
+                    </button>
+                    <a href="/" class="action-btn" style="margin-left: 10px;" title="Home">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- AI Header -->
+        <div class="ai-header">
+            <div class="ai-avatar">
+                <i class="fa fa-brain"></i>
+            </div>
+            <div class="ai-name">Fashion AI Assistant</div>
+            <div class="ai-description">Your personal style consultant powered by artificial intelligence</div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai">
+                <div class="message-bubble">
+                    👋 Hello! I'm your AI fashion assistant. I can help you find the perfect outfit, suggest style combinations, and answer any fashion questions you might have. What would you like to explore today?
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me about fashion, styles, or specific products...">
+                <div class="input-actions">
+                    <button class="action-btn" onclick="attachImage()" title="Attach Image">
+                        <i class="fa fa-camera"></i>
+                    </button>
+                    <button class="action-btn" onclick="voiceInput()" title="Voice Input">
+                        <i class="fa fa-microphone"></i>
+                    </button>
+                    <button class="action-btn send-btn" onclick="sendMessage()" title="Send Message">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="quick-action" onclick="quickMessage('What\'s trending today?')">🔥 What's trending?</div>
+                <div class="quick-action" onclick="quickMessage('Show me casual outfits')">👕 Casual outfits</div>
+                <div class="quick-action" onclick="quickMessage('Help me with formal wear')">💼 Formal wear</div>
+                <div class="quick-action" onclick="quickMessage('Color coordination tips')">🎨 Color tips</div>
+                <div class="quick-action" onclick="quickMessage('Size guide help')">📏 Size guide</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <div class="panel-title">AI Recommendations</div>
+            <button class="close-panel" onclick="togglePanel()">&times;</button>
+        </div>
+        
+        <div id="recommendations">
+            <!-- Recommendations will be populated here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        let conversationHistory = [];
+        
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create AI-themed geometries
+            const geometries = [
+                new THREE.OctahedronGeometry(1),
+                new THREE.TetrahedronGeometry(1),
+                new THREE.IcosahedronGeometry(1),
+                new THREE.DodecahedronGeometry(1)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0x00ff88, wireframe: true, transparent: true, opacity: 0.4 }),
+                new THREE.MeshBasicMaterial({ color: 0x00ccff, wireframe: true, transparent: true, opacity: 0.4 }),
+                new THREE.MeshBasicMaterial({ color: 0x0080ff, wireframe: true, transparent: true, opacity: 0.4 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 12; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 25;
+                mesh.position.y = (Math.random() - 0.5) * 25;
+                mesh.position.z = (Math.random() - 0.5) * 25;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 15;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.002 + index * 0.0005;
+                    mesh.rotation.y += 0.002 + index * 0.0005;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.008;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize neural network animation
+        function initNeuralNetwork() {
+            const container = document.getElementById('neuralNetwork');
+            const nodeCount = 30;
+            const nodes = [];
+
+            // Create nodes
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'neural-node';
+                node.style.left = Math.random() * 100 + '%';
+                node.style.top = Math.random() * 100 + '%';
+                node.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(node);
+                nodes.push(node);
+            }
+
+            // Create connections
+            for (let i = 0; i < nodeCount / 2; i++) {
+                const connection = document.createElement('div');
+                connection.className = 'neural-connection';
+                
+                const startX = Math.random() * 100;
+                const startY = Math.random() * 100;
+                const endX = Math.random() * 100;
+                const endY = Math.random() * 100;
+                
+                const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+                
+                connection.style.left = startX + '%';
+                connection.style.top = startY + '%';
+                connection.style.width = length + '%';
+                connection.style.transform = `rotate(${angle}deg)`;
+                connection.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(connection);
+            }
+        }
+
+        // Send message function
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                processAIResponse(message);
+            }
+        }
+
+        // Quick message function
+        function quickMessage(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage();
+        }
+
+        // Add message to chat
+        function addMessage(sender, text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = text;
+            
+            messageDiv.appendChild(bubbleDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Store in conversation history
+            conversationHistory.push({ sender, text, timestamp: new Date() });
+        }
+
+        // Process AI response
+        function processAIResponse(userMessage) {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.style.display = 'block';
+            
+            // Simulate AI processing time
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                
+                // Generate AI response based on user input
+                const response = generateAIResponse(userMessage);
+                addMessage('ai', response);
+                
+                // Update recommendations
+                updateRecommendations(userMessage);
+            }, 1500 + Math.random() * 2000);
+        }
+
+        // Generate AI response
+        function generateAIResponse(userMessage) {
+            const responses = {
+                'trending': "🔥 Currently trending: Oversized blazers, high-waisted jeans, and statement accessories! Pastel colors and sustainable fashion are also very popular. Would you like me to show you some specific trending pieces?",
+                'casual': "👕 For casual outfits, I recommend: comfortable jeans or skirts paired with soft cotton tops, sneakers or flats, and a light jacket. The key is comfort while still looking put-together!",
+                'formal': "💼 For formal wear: tailored blazers, dress pants or pencil skirts, button-down shirts, and classic pumps. Neutral colors like black, navy, or gray work best for professional settings.",
+                'color': "🎨 Color coordination tips: Start with neutral bases (black, white, gray, beige) and add one accent color. Complementary colors (opposite on color wheel) create vibrant looks, while analogous colors create harmony.",
+                'size': "📏 Size guide: Measure your bust, waist, and hips. Always check the brand's specific size chart as sizing varies. When in doubt, size up for comfort. I can help you find the right size for specific items!",
+                'default': "I understand you're looking for fashion advice! I can help with outfit suggestions, style tips, product recommendations, and more. Could you be more specific about what you're looking for?"
+            };
+            
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('trend')) return responses.trending;
+            if (lowerMessage.includes('casual')) return responses.casual;
+            if (lowerMessage.includes('formal') || lowerMessage.includes('professional') || lowerMessage.includes('work')) return responses.formal;
+            if (lowerMessage.includes('color')) return responses.color;
+            if (lowerMessage.includes('size')) return responses.size;
+            
+            return responses.default;
+        }
+
+        // Update recommendations
+        function updateRecommendations(userMessage) {
+            const recommendationsContainer = document.getElementById('recommendations');
+            
+            // Sample recommendations based on user query
+            const recommendations = [
+                { name: "Designer Kurti", price: "$45", image: "../static/img/product2.jpg" },
+                { name: "Elegant Skirt", price: "$38", image: "../static/img/skirts1.jpg" },
+                { name: "Classic Jeans", price: "$65", image: "../static/img/jeans1.jpg" },
+                { name: "Stylish Jumpsuit", price: "$85", image: "../static/img/jumpsuit1.jpg" }
+            ];
+            
+            recommendationsContainer.innerHTML = recommendations.map(item => `
+                <div class="recommendation-card">
+                    <img src="${item.image}" alt="${item.name}" class="recommendation-image">
+                    <div class="recommendation-name">${item.name}</div>
+                    <div class="recommendation-price">${item.price}</div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle side panel
+        function togglePanel() {
+            const panel = document.getElementById('sidePanel');
+            panel.classList.toggle('active');
+        }
+
+        // Placeholder functions
+        function attachImage() {
+            addMessage('ai', "📸 Image upload feature coming soon! For now, you can describe what you're looking for and I'll help you find similar items.");
+        }
+
+        function voiceInput() {
+            addMessage('ai', "🎤 Voice input feature coming soon! For now, please type your fashion questions and I'll be happy to help.");
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            initNeuralNetwork();
+            updateRecommendations('');
+            
+            // Enter key support
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Auto-focus input
+            document.getElementById('chatInput').focus();
+        });
+    </script>
+</body>
+</html>

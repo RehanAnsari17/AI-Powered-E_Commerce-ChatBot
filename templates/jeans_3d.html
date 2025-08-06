@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Denim Dreams - 3D Jeans Collection</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --denim-gradient: linear-gradient(135deg, #0066cc 0%, #004499 50%, #003377 100%);
+            --indigo-gradient: linear-gradient(135deg, #4b0082 0%, #6a0dad 50%, #8a2be2 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff6600 0%, #e55a00 50%, #cc4f00 100%);
+            --neon-blue: #0066cc;
+            --neon-indigo: #4b0082;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--denim-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .nav-3d {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-3d a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .nav-3d a:hover,
+        .nav-3d a.active {
+            color: #fff;
+            background: var(--denim-gradient);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 102, 204, 0.4);
+        }
+
+        /* Hero Section */
+        .hero-section-3d {
+            padding: 100px 0;
+            text-align: center;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 102, 204, 0.3) 0%, transparent 50%),
+                url('https://images.pexels.com/photos/135620/pexels-photo-135620.jpeg') center/cover;
+            position: relative;
+        }
+
+        .hero-section-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--neon-blue), #fff);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Denim Types Section */
+        .denim-types {
+            padding: 80px 0;
+            background: var(--dark-glass);
+            backdrop-filter: blur(10px);
+        }
+
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .type-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--neon-blue), transparent);
+            animation: rotate 6s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .type-card:hover::before {
+            opacity: 0.2;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .type-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 102, 204, 0.3);
+        }
+
+        .type-card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .type-icon {
+            font-size: 3rem;
+            background: var(--denim-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .type-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .type-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .type-badge {
+            background: var(--denim-gradient);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--denim-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 60px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .product-card-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+
+        .product-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--denim-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .product-card-3d:hover::before {
+            opacity: 0.1;
+        }
+
+        .product-card-3d:hover {
+            transform: translateY(-15px) rotateY(5deg) rotateX(-5deg);
+            box-shadow: 0 25px 50px rgba(0, 102, 204, 0.3);
+        }
+
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 350px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-card-3d:hover .product-image {
+            transform: scale(1.1) rotate(-1deg);
+        }
+
+        .product-labels {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 3;
+        }
+
+        .product-label {
+            background: var(--neon-indigo);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(75, 0, 130, 0.4);
+        }
+
+        .product-label.sale {
+            background: var(--secondary-gradient);
+        }
+
+        .product-label.new {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .product-info {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-category {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+        }
+
+        .product-price .old-price {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
+
+        .product-rating {
+            color: #ffc107;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .product-features {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background: var(--dark-glass);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-3d {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary-3d {
+            background: var(--denim-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(0, 102, 204, 0.4);
+        }
+
+        .btn-primary-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 102, 204, 0.6);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            background: var(--secondary-gradient);
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        /* Size Guide */
+        .size-guide {
+            padding: 80px 0;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.1), rgba(75, 0, 130, 0.1));
+        }
+
+        .size-chart {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            overflow-x: auto;
+        }
+
+        .size-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+        }
+
+        .size-table th,
+        .size-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .size-table th {
+            background: var(--denim-gradient);
+            font-weight: 600;
+        }
+
+        .size-table td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Floating Action Button */
+        .fab-3d {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--denim-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .fab-3d:hover {
+            transform: scale(1.1) rotate(-15deg);
+            box-shadow: 0 15px 40px rgba(0, 102, 204, 0.7);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(0, 102, 204, 0.5); }
+            50% { box-shadow: 0 10px 30px rgba(0, 102, 204, 0.5), 0 0 0 15px rgba(0, 102, 204, 0.1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .section-title { font-size: 2rem; }
+            .nav-3d { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .products-grid { grid-template-columns: 1fr; }
+            .types-grid { grid-template-columns: 1fr; }
+            .fab-3d { bottom: 20px; right: 20px; width: 60px; height: 60px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div class="logo-3d">👖 Denim Dreams</div>
+                </div>
+                <div class="col-md-6">
+                    <ul class="nav-3d">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/kurtis">Kurtis</a></li>
+                        <li><a href="/skirts">Skirts</a></li>
+                        <li><a href="/jeans" class="active">Jeans</a></li>
+                        <li><a href="/jumpsuits">Jumpsuits</a></li>
+                        <li><a href="/store">Store</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a href="/cart" style="color: #fff; margin-right: 20px;"><i class="fa fa-shopping-cart"></i> <span style="background: var(--neon-blue); padding: 2px 8px; border-radius: 50%; font-size: 12px;">3</span></a>
+                    <a href="/wishlist" style="color: #fff;"><i class="fa fa-heart"></i> <span style="background: var(--neon-blue); padding: 2px 8px; border-radius: 50%; font-size: 12px;">2</span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section-3d">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Denim Dreams</h1>
+                <p class="hero-subtitle">Premium jeans collection crafted for comfort, style, and durability</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Denim Types -->
+    <section class="denim-types">
+        <div class="container">
+            <h2 class="section-title">Explore Denim Styles</h2>
+            <div class="types-grid">
+                <div class="type-card" data-type="skinny">
+                    <div class="type-card-content">
+                        <div class="type-icon">📐</div>
+                        <div class="type-title">Skinny Fit</div>
+                        <div class="type-description">Close-fitting through hip and thigh with a tapered leg</div>
+                        <div class="type-badge">Trendy</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="straight">
+                    <div class="type-card-content">
+                        <div class="type-icon">📏</div>
+                        <div class="type-title">Straight Leg</div>
+                        <div class="type-description">Classic fit that's straight from hip to ankle</div>
+                        <div class="type-badge">Classic</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="bootcut">
+                    <div class="type-card-content">
+                        <div class="type-icon">👢</div>
+                        <div class="type-title">Bootcut</div>
+                        <div class="type-description">Slightly flared from knee to accommodate boots</div>
+                        <div class="type-badge">Versatile</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="wide">
+                    <div class="type-card-content">
+                        <div class="type-icon">🌊</div>
+                        <div class="type-title">Wide Leg</div>
+                        <div class="type-description">Relaxed fit with a wide opening for comfort</div>
+                        <div class="type-badge">Comfortable</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <h2 class="section-title">Featured Jeans</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Size Guide -->
+    <section class="size-guide">
+        <div class="container">
+            <h2 class="section-title">Denim Size Guide</h2>
+            <div class="size-chart">
+                <table class="size-table">
+                    <thead>
+                        <tr>
+                            <th>Size</th>
+                            <th>Waist (inches)</th>
+                            <th>Hip (inches)</th>
+                            <th>Inseam (inches)</th>
+                            <th>Rise (inches)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>XS</td>
+                            <td>24-25</td>
+                            <td>34-35</td>
+                            <td>30</td>
+                            <td>7</td>
+                        </tr>
+                        <tr>
+                            <td>S</td>
+                            <td>26-27</td>
+                            <td>36-37</td>
+                            <td>30</td>
+                            <td>7.5</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>28-29</td>
+                            <td>38-39</td>
+                            <td>32</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>30-31</td>
+                            <td>40-41</td>
+                            <td>32</td>
+                            <td>8.5</td>
+                        </tr>
+                        <tr>
+                            <td>XL</td>
+                            <td>32-33</td>
+                            <td>42-43</td>
+                            <td>34</td>
+                            <td>9</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Action Button -->
+    <a href="/chatbot" class="fab-3d" title="Get Denim Advice">
+        <i class="fa fa-question"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        // Sample jeans data
+        const jeansProducts = [
+            {
+                id: 1,
+                name: "Classic Skinny Jeans",
+                category: "Jeans",
+                type: "skinny",
+                price: 65.00,
+                oldPrice: 85.00,
+                image: "../static/img/jeans1.jpg",
+                labels: ["BESTSELLER", "24% OFF"],
+                rating: 4.7,
+                features: ["Stretch", "High-Waist", "Fade-Resistant"],
+                description: "Premium skinny jeans with stretch denim for ultimate comfort"
+            },
+            {
+                id: 2,
+                name: "High-Waist Mom Jeans",
+                category: "Jeans",
+                type: "straight",
+                price: 70.00,
+                oldPrice: 90.00,
+                image: "../static/img/jeans2.jpg",
+                labels: ["TRENDING", "22% OFF"],
+                rating: 4.8,
+                features: ["High-Waist", "Vintage", "Cotton Blend"],
+                description: "Vintage-inspired mom jeans with a comfortable high-waist fit"
+            },
+            {
+                id: 3,
+                name: "Bootcut Dark Wash",
+                category: "Jeans",
+                type: "bootcut",
+                price: 58.00,
+                oldPrice: 75.00,
+                image: "../static/img/jeans3.jpg",
+                labels: ["CLASSIC"],
+                rating: 4.5,
+                features: ["Bootcut", "Dark Wash", "Mid-Rise"],
+                description: "Timeless bootcut jeans perfect for pairing with boots"
+            },
+            {
+                id: 4,
+                name: "Distressed Straight Leg",
+                category: "Jeans",
+                type: "straight",
+                price: 72.00,
+                oldPrice: 95.00,
+                image: "../static/img/jeans4.jpg",
+                labels: ["EDGY", "24% OFF"],
+                rating: 4.4,
+                features: ["Distressed", "Straight Leg", "Premium Denim"],
+                description: "Edgy distressed jeans with authentic wear patterns"
+            },
+            {
+                id: 5,
+                name: "Wide Leg Flare",
+                category: "Jeans",
+                type: "wide",
+                price: 68.00,
+                oldPrice: 88.00,
+                image: "../static/img/jeans5.jpg",
+                labels: ["RETRO", "23% OFF"],
+                rating: 4.6,
+                features: ["Wide Leg", "Flare", "70s Inspired"],
+                description: "Retro-inspired wide leg jeans with a dramatic flare"
+            },
+            {
+                id: 6,
+                name: "Premium Raw Denim",
+                category: "Jeans",
+                type: "straight",
+                price: 95.00,
+                oldPrice: 120.00,
+                image: "../static/img/jeans6.jpg",
+                labels: ["PREMIUM", "21% OFF"],
+                rating: 4.9,
+                features: ["Raw Denim", "Selvedge", "Japanese Cotton"],
+                description: "Luxury raw denim jeans for the true denim enthusiast"
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create denim-themed geometries
+            const geometries = [
+                new THREE.CylinderGeometry(0.5, 0.5, 2, 8),
+                new THREE.BoxGeometry(1, 2, 0.5),
+                new THREE.SphereGeometry(0.5, 16, 16),
+                new THREE.TorusGeometry(0.6, 0.2, 8, 16)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0x0066cc, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x4b0082, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x003377, wireframe: true, transparent: true, opacity: 0.3 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 16; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 32;
+                mesh.position.y = (Math.random() - 0.5) * 32;
+                mesh.position.z = (Math.random() - 0.5) * 32;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 18;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.002 + index * 0.0005;
+                    mesh.rotation.y += 0.002 + index * 0.0005;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.008;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Render products
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card-3d" data-type="${product.type}">
+                    <div class="product-image-container">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <div class="product-labels">
+                            ${product.labels.map(label => `
+                                <span class="product-label ${label.toLowerCase().includes('sale') || label.includes('OFF') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category">${product.category}</p>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">
+                            $${product.price.toFixed(2)}
+                            ${product.oldPrice ? `<span class="old-price">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                        </div>
+                        <div class="product-rating">
+                            ${Array.from({length: 5}, (_, i) => `
+                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
+                            `).join('')}
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                        </div>
+                        <div class="product-features">
+                            ${product.features.map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
+                                <i class="fa fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
+                                <i class="fa fa-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Animate cards
+            gsap.fromTo('.product-card-3d', 
+                { opacity: 0, y: 50, rotationY: 15 },
+                { opacity: 1, y: 0, rotationY: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
+            );
+        }
+
+        // Filter products by type
+        function filterProducts(type) {
+            currentFilter = type;
+            const filtered = type === 'all' ? jeansProducts : jeansProducts.filter(p => p.type === type);
+            renderProducts(filtered);
+            
+            // Update active type card
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.style.background = 'var(--glass-bg)';
+                card.style.transform = 'scale(1)';
+            });
+            
+            if (type !== 'all') {
+                const activeCard = document.querySelector(`[data-type="${type}"]`);
+                if (activeCard) {
+                    activeCard.style.background = 'rgba(0, 102, 204, 0.2)';
+                    activeCard.style.transform = 'scale(1.05)';
+                }
+            }
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = jeansProducts.find(p => p.id === productId);
+            gsap.to(`[data-type="${product.type}"]`, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
+            
+            setTimeout(() => {
+                alert(`Added "${product.name}" to cart!`);
+            }, 200);
+        }
+
+        // Quick view
+        function quickView(productId) {
+            const product = jeansProducts.find(p => p.id === productId);
+            alert(`${product.name}\n\n${product.description}\n\nFeatures: ${product.features.join(', ')}\n\nPrice: $${product.price.toFixed(2)}\nRating: ${product.rating}/5`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            renderProducts(jeansProducts);
+            
+            // Add type card event listeners
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const type = card.getAttribute('data-type');
+                    filterProducts(type);
+                });
+                
+                // 3D hover effects
+                card.addEventListener('mouseenter', () => {
+                    gsap.to(card, {
+                        rotationY: -8,
+                        rotationX: 5,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        rotationY: 0,
+                        rotationX: 0,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

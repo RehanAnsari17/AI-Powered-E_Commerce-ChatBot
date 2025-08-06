@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>3D Fashion Store - Complete Collection</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --store-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --rainbow-gradient: linear-gradient(135deg, #ff0080 0%, #8000ff 25%, #0080ff 50%, #00ff80 75%, #ff8000 100%);
+            --neon-purple: #8000ff;
+            --neon-cyan: #00ffff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--rainbow-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+            animation: rainbow-shift 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbow-shift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+
+        /* Store Hero */
+        .store-hero {
+            padding: 80px 0;
+            text-align: center;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                url('https://images.pexels.com/photos/135620/pexels-photo-135620.jpeg') center/cover;
+            position: relative;
+        }
+
+        .store-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .store-title {
+            font-size: 4rem;
+            font-weight: 700;
+            background: var(--rainbow-gradient);
+            background-size: 300% 300%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .store-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: var(--dark-glass);
+            backdrop-filter: blur(15px);
+            padding: 30px 0;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 80px;
+            z-index: 900;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            color: #fff;
+            padding: 10px 20px;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:hover {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 15px rgba(128, 0, 255, 0.3);
+        }
+
+        .filter-select option {
+            background: #333;
+            color: #fff;
+        }
+
+        .search-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            color: #fff;
+            padding: 10px 20px;
+            outline: none;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .tab-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: var(--store-gradient);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 40px 0 80px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .product-card-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+
+        .product-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--rainbow-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .product-card-3d:hover::before {
+            opacity: 0.1;
+        }
+
+        .product-card-3d:hover {
+            transform: translateY(-10px) rotateY(3deg) rotateX(-3deg);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 280px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-card-3d:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .product-labels {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 3;
+        }
+
+        .product-label {
+            background: var(--neon-purple);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(128, 0, 255, 0.4);
+        }
+
+        .product-info {
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-category {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--rainbow-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .product-rating {
+            color: #ffc107;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-3d {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary-3d {
+            background: var(--store-gradient);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 60px 0;
+            background: var(--dark-glass);
+            backdrop-filter: blur(15px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 30px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--rainbow-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .store-title { font-size: 2.5rem; }
+            .filters-container { justify-content: center; }
+            .search-box { min-width: 200px; }
+            .products-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+            .tabs-container { gap: 10px; }
+            .tab-btn { padding: 10px 20px; font-size: 0.9rem; }
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--neon-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="logo-3d">🏪 3D Fashion Store</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <nav style="display: flex; gap: 20px; justify-content: center;">
+                        <a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none;">Home</a>
+                        <a href="/store" style="color: #fff; text-decoration: none; font-weight: 600;">Store</a>
+                        <a href="/chatbot" style="color: rgba(255,255,255,0.8); text-decoration: none;">AI Assistant</a>
+                    </nav>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/cart" style="color: #fff; margin-right: 20px;"><i class="fa fa-shopping-cart"></i> <span style="background: var(--neon-purple); padding: 2px 8px; border-radius: 50%; font-size: 12px;">3</span></a>
+                    <a href="/wishlist" style="color: #fff;"><i class="fa fa-heart"></i> <span style="background: var(--neon-purple); padding: 2px 8px; border-radius: 50%; font-size: 12px;">2</span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Store Hero -->
+    <section class="store-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="store-title">Complete Fashion Store</h1>
+                <p class="store-subtitle">Discover thousands of products across all categories in our immersive 3D shopping experience</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <input type="text" class="search-box" id="searchBox" placeholder="Search products...">
+                </div>
+                <div class="filter-group">
+                    <select class="filter-select" id="sortFilter">
+                        <option value="featured">Sort by: Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest First</option>
+                        <option value="rating">Highest Rated</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select class="filter-select" id="priceFilter">
+                        <option value="">All Prices</option>
+                        <option value="0-25">$0 - $25</option>
+                        <option value="25-50">$25 - $50</option>
+                        <option value="50-100">$50 - $100</option>
+                        <option value="100+">$100+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <section class="category-tabs">
+        <div class="container">
+            <div class="tabs-container">
+                <button class="tab-btn active" data-category="all">All Products</button>
+                <button class="tab-btn" data-category="kurtis">Kurtis</button>
+                <button class="tab-btn" data-category="skirts">Skirts</button>
+                <button class="tab-btn" data-category="jeans">Jeans</button>
+                <button class="tab-btn" data-category="jumpsuits">Jumpsuits</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading amazing products...</p>
+            </div>
+            <div class="products-grid" id="productsGrid" style="display: none;">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+            <div class="no-results" id="noResults" style="display: none;">
+                <div class="no-results-icon">🔍</div>
+                <h3>No products found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">AI Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        // Combined products data
+        const allProducts = [
+            // Kurtis
+            { id: 1, name: "Elegant Floral Cotton Kurti", category: "kurtis", price: 45.00, image: "../static/img/product2.jpg", labels: ["30% OFF", "NEW"], rating: 4.5 },
+            { id: 2, name: "Designer Embroidered Kurti", category: "kurtis", price: 68.00, image: "../static/img/product3.jpg", labels: ["20% OFF"], rating: 4.8 },
+            { id: 3, name: "Traditional Block Print Kurti", category: "kurtis", price: 38.00, image: "../static/img/product4.jpg", labels: ["SALE"], rating: 4.3 },
+            { id: 4, name: "Modern A-Line Kurti", category: "kurtis", price: 55.00, image: "../static/img/product5.jpg", labels: ["TRENDING"], rating: 4.6 },
+            
+            // Skirts
+            { id: 5, name: "Floral Mini Skirt", category: "skirts", price: 35.00, image: "../static/img/skirts1.jpg", labels: ["TRENDING"], rating: 4.4 },
+            { id: 6, name: "A-Line Denim Skirt", category: "skirts", price: 40.00, image: "../static/img/Skirts2.jpg", labels: ["BESTSELLER"], rating: 4.6 },
+            { id: 7, name: "Pleated Midi Skirt", category: "skirts", price: 48.00, image: "../static/img/skirts3.jpg", labels: ["NEW", "26% OFF"], rating: 4.5 },
+            { id: 8, name: "Maxi Boho Skirt", category: "skirts", price: 52.00, image: "../static/img/skirts4.jpg", labels: ["BOHO STYLE"], rating: 4.7 },
+            
+            // Jeans
+            { id: 9, name: "Classic Skinny Jeans", category: "jeans", price: 65.00, image: "../static/img/jeans1.jpg", labels: ["BESTSELLER"], rating: 4.7 },
+            { id: 10, name: "High-Waist Mom Jeans", category: "jeans", price: 70.00, image: "../static/img/jeans2.jpg", labels: ["TRENDING"], rating: 4.8 },
+            { id: 11, name: "Bootcut Dark Wash", category: "jeans", price: 58.00, image: "../static/img/jeans3.jpg", labels: ["CLASSIC"], rating: 4.5 },
+            { id: 12, name: "Distressed Straight Leg", category: "jeans", price: 72.00, image: "../static/img/jeans4.jpg", labels: ["EDGY"], rating: 4.4 },
+            
+            // Jumpsuits
+            { id: 13, name: "Casual Jumpsuit", category: "jumpsuits", price: 85.00, image: "../static/img/jumpsuit1.jpg", labels: ["25% OFF"], rating: 4.6 },
+            { id: 14, name: "Evening Jumpsuit", category: "jumpsuits", price: 120.00, image: "../static/img/jumpsuit2.jpg", labels: ["ELEGANT"], rating: 4.8 },
+            { id: 15, name: "Summer Jumpsuit", category: "jumpsuits", price: 75.00, image: "../static/img/jumpsuit3.jpg", labels: ["SUMMER"], rating: 4.5 },
+            { id: 16, name: "Formal Jumpsuit", category: "jumpsuits", price: 135.00, image: "../static/img/jumpsuit4.jpg", labels: ["PREMIUM"], rating: 4.9 }
+        ];
+
+        let filteredProducts = [...allProducts];
+        let currentCategory = 'all';
+
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create store-themed geometries
+            const geometries = [
+                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.SphereGeometry(0.5, 16, 16),
+                new THREE.CylinderGeometry(0.5, 0.5, 1, 8),
+                new THREE.TorusGeometry(0.6, 0.2, 8, 16),
+                new THREE.OctahedronGeometry(0.7)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0x667eea, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x764ba2, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0xf093fb, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x8000ff, wireframe: true, transparent: true, opacity: 0.3 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 25; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 40;
+                mesh.position.y = (Math.random() - 0.5) * 40;
+                mesh.position.z = (Math.random() - 0.5) * 40;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 25;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.001 + index * 0.0005;
+                    mesh.rotation.y += 0.001 + index * 0.0005;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.005;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Render products
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            const loading = document.getElementById('loading');
+            const noResults = document.getElementById('noResults');
+            
+            loading.style.display = 'none';
+            
+            if (products.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            grid.style.display = 'grid';
+            
+            grid.innerHTML = products.map(product => `
+                <div class="product-card-3d" data-category="${product.category}">
+                    <div class="product-image-container">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <div class="product-labels">
+                            ${product.labels.map(label => `
+                                <span class="product-label">${label}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category">${product.category.charAt(0).toUpperCase() + product.category.slice(1)}</p>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">$${product.price.toFixed(2)}</div>
+                        <div class="product-rating">
+                            ${Array.from({length: 5}, (_, i) => `
+                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
+                            `).join('')}
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
+                                <i class="fa fa-shopping-cart"></i> Add
+                            </button>
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
+                                <i class="fa fa-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Animate cards
+            gsap.fromTo('.product-card-3d', 
+                { opacity: 0, y: 30, scale: 0.9 },
+                { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.05, ease: "power2.out" }
+            );
+        }
+
+        // Filter and search products
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const sortBy = document.getElementById('sortFilter').value;
+            const priceRange = document.getElementById('priceFilter').value;
+            
+            let filtered = allProducts.filter(product => {
+                // Category filter
+                if (currentCategory !== 'all' && product.category !== currentCategory) return false;
+                
+                // Search filter
+                if (searchTerm && !product.name.toLowerCase().includes(searchTerm)) return false;
+                
+                // Price filter
+                if (priceRange) {
+                    if (priceRange === '100+' && product.price <= 100) return false;
+                    if (priceRange !== '100+') {
+                        const [min, max] = priceRange.split('-').map(Number);
+                        if (product.price < min || product.price > max) return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Sort products
+            switch (sortBy) {
+                case 'price-low':
+                    filtered.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    filtered.sort((a, b) => b.price - a.price);
+                    break;
+                case 'rating':
+                    filtered.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'newest':
+                    filtered.sort((a, b) => b.id - a.id);
+                    break;
+                default:
+                    // Keep original order for featured
+                    break;
+            }
+            
+            filteredProducts = filtered;
+            renderProducts(filteredProducts);
+        }
+
+        // Switch category
+        function switchCategory(category) {
+            currentCategory = category;
+            
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+            
+            filterProducts();
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            gsap.to(`[data-category="${product.category}"]`, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
+            
+            setTimeout(() => {
+                alert(`Added "${product.name}" to cart!`);
+            }, 200);
+        }
+
+        // Quick view
+        function quickView(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            window.location.href = `/${product.category}`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            
+            // Simulate loading
+            setTimeout(() => {
+                renderProducts(allProducts);
+            }, 1500);
+            
+            // Add event listeners
+            document.getElementById('searchBox').addEventListener('input', filterProducts);
+            document.getElementById('sortFilter').addEventListener('change', filterProducts);
+            document.getElementById('priceFilter').addEventListener('change', filterProducts);
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchCategory(btn.getAttribute('data-category'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>

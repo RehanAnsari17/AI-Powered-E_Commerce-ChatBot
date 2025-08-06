@@ -1,4 +1,3 @@
-
 :root {
 
     /**
@@ -2414,8 +2413,14 @@
      */
   
     .container {
-      max-width: 750px;
+      max-width: 843px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
       margin: auto;
+      padding: 0 15px;
     }
   
   

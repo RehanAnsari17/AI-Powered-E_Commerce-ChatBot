@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kurtis Collection - 3D Fashion Experience</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #e9598b 0%, #d63384 50%, #b83d7a 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff6600 0%, #e55a00 50%, #cc4f00 100%);
+            --neon-pink: #ff0080;
+            --neon-blue: #0080ff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--primary-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .nav-3d {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-3d a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .nav-3d a:hover,
+        .nav-3d a.active {
+            color: #fff;
+            background: var(--primary-gradient);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(233, 89, 139, 0.4);
+        }
+
+        /* Hero Section */
+        .hero-section-3d {
+            padding: 100px 0;
+            text-align: center;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(233, 89, 139, 0.3) 0%, transparent 50%),
+                url('https://images.pexels.com/photos/7035193/pexels-photo-7035193.jpeg') center/cover;
+            position: relative;
+        }
+
+        .hero-section-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--neon-pink), #fff);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--dark-glass);
+            backdrop-filter: blur(15px);
+            padding: 30px 0;
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            color: #fff;
+            padding: 10px 20px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-select option {
+            background: #333;
+            color: #fff;
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 80px 0;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .product-card-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+
+        .product-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .product-card-3d:hover::before {
+            opacity: 0.1;
+        }
+
+        .product-card-3d:hover {
+            transform: translateY(-15px) rotateY(5deg) rotateX(5deg);
+            box-shadow: 0 25px 50px rgba(233, 89, 139, 0.3);
+        }
+
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 350px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-card-3d:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .product-labels {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 3;
+        }
+
+        .product-label {
+            background: var(--neon-pink);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
+        }
+
+        .product-label.sale {
+            background: var(--secondary-gradient);
+        }
+
+        .product-label.new {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .product-info {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-category {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--neon-pink);
+            margin-bottom: 15px;
+        }
+
+        .product-price .old-price {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
+
+        .product-rating {
+            color: #ffc107;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-3d {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary-3d {
+            background: var(--primary-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(233, 89, 139, 0.4);
+        }
+
+        .btn-primary-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(233, 89, 139, 0.6);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            background: var(--secondary-gradient);
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        /* Quick View Modal */
+        .modal-3d {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Floating Action Button */
+        .fab-3d {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--secondary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .fab-3d:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 102, 0, 0.7);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5); }
+            50% { box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5), 0 0 0 15px rgba(255, 102, 0, 0.1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .nav-3d { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .filter-container { justify-content: center; }
+            .products-grid { grid-template-columns: 1fr; }
+            .fab-3d { bottom: 20px; right: 20px; width: 60px; height: 60px; }
+        }
+
+        /* Loading Animation */
+        .product-card-3d.loading {
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div class="logo-3d">✨ FashionBot AI</div>
+                </div>
+                <div class="col-md-6">
+                    <ul class="nav-3d">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/kurtis" class="active">Kurtis</a></li>
+                        <li><a href="/skirts">Skirts</a></li>
+                        <li><a href="/jeans">Jeans</a></li>
+                        <li><a href="/jumpsuits">Jumpsuits</a></li>
+                        <li><a href="/store">Store</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a href="/cart" style="color: #fff; margin-right: 20px;"><i class="fa fa-shopping-cart"></i> <span style="background: var(--neon-pink); padding: 2px 8px; border-radius: 50%; font-size: 12px;">3</span></a>
+                    <a href="/wishlist" style="color: #fff;"><i class="fa fa-heart"></i> <span style="background: var(--neon-pink); padding: 2px 8px; border-radius: 50%; font-size: 12px;">2</span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section-3d">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Kurtis Collection</h1>
+                <p class="hero-subtitle">Discover elegant traditional and contemporary kurti designs crafted for the modern woman</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="filter-section">
+        <div class="container">
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label style="color: #fff; margin-right: 10px;">Sort by:</label>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="featured">Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest</option>
+                        <option value="rating">Highest Rated</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label style="color: #fff; margin-right: 10px;">Size:</label>
+                    <select class="filter-select" id="sizeFilter">
+                        <option value="">All Sizes</option>
+                        <option value="xs">XS</option>
+                        <option value="s">S</option>
+                        <option value="m">M</option>
+                        <option value="l">L</option>
+                        <option value="xl">XL</option>
+                        <option value="xxl">XXL</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label style="color: #fff; margin-right: 10px;">Color:</label>
+                    <select class="filter-select" id="colorFilter">
+                        <option value="">All Colors</option>
+                        <option value="red">Red</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                        <option value="black">Black</option>
+                        <option value="white">White</option>
+                        <option value="pink">Pink</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label style="color: #fff; margin-right: 10px;">Price Range:</label>
+                    <select class="filter-select" id="priceFilter">
+                        <option value="">All Prices</option>
+                        <option value="0-25">$0 - $25</option>
+                        <option value="25-50">$25 - $50</option>
+                        <option value="50-75">$50 - $75</option>
+                        <option value="75-100">$75 - $100</option>
+                        <option value="100+">$100+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick View Modal -->
+    <div class="modal-3d" id="quickViewModal">
+        <div class="modal-content-3d">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <a href="/chatbot" class="fab-3d" title="Get AI Recommendations">
+        <i class="fa fa-robot"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        // Sample product data
+        const kurtisProducts = [
+            {
+                id: 1,
+                name: "Elegant Floral Cotton Kurti",
+                category: "Kurtis",
+                price: 45.00,
+                oldPrice: 60.00,
+                image: "../static/img/product2.jpg",
+                labels: ["30% OFF", "NEW"],
+                rating: 4.5,
+                colors: ["red", "blue", "green"],
+                sizes: ["s", "m", "l", "xl"],
+                description: "Beautiful floral print cotton kurti perfect for casual wear"
+            },
+            {
+                id: 2,
+                name: "Designer Embroidered Kurti",
+                category: "Kurtis",
+                price: 68.00,
+                oldPrice: 85.00,
+                image: "../static/img/product3.jpg",
+                labels: ["20% OFF"],
+                rating: 4.8,
+                colors: ["black", "white", "pink"],
+                sizes: ["xs", "s", "m", "l"],
+                description: "Elegant embroidered kurti with intricate threadwork"
+            },
+            {
+                id: 3,
+                name: "Traditional Block Print Kurti",
+                category: "Kurtis",
+                price: 38.00,
+                oldPrice: 50.00,
+                image: "../static/img/product4.jpg",
+                labels: ["SALE"],
+                rating: 4.3,
+                colors: ["blue", "green", "red"],
+                sizes: ["m", "l", "xl", "xxl"],
+                description: "Handcrafted block print kurti with traditional patterns"
+            },
+            {
+                id: 4,
+                name: "Modern A-Line Kurti",
+                category: "Kurtis",
+                price: 55.00,
+                oldPrice: 70.00,
+                image: "../static/img/product5.jpg",
+                labels: ["TRENDING"],
+                rating: 4.6,
+                colors: ["black", "white"],
+                sizes: ["s", "m", "l"],
+                description: "Contemporary A-line kurti for the modern woman"
+            },
+            {
+                id: 5,
+                name: "Festive Golden Kurti",
+                category: "Kurtis",
+                price: 85.00,
+                oldPrice: 110.00,
+                image: "../static/img/product1.jpg",
+                labels: ["PREMIUM", "23% OFF"],
+                rating: 4.9,
+                colors: ["gold", "red", "green"],
+                sizes: ["xs", "s", "m", "l", "xl"],
+                description: "Luxurious golden kurti perfect for festivals and celebrations"
+            },
+            {
+                id: 6,
+                name: "Casual Striped Kurti",
+                category: "Kurtis",
+                price: 32.00,
+                oldPrice: 42.00,
+                image: "../static/img/product6.jpg",
+                labels: ["BESTSELLER"],
+                rating: 4.4,
+                colors: ["blue", "pink", "green"],
+                sizes: ["s", "m", "l", "xl"],
+                description: "Comfortable striped kurti perfect for everyday wear"
+            }
+        ];
+
+        let filteredProducts = [...kurtisProducts];
+
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create floating fashion-themed geometries
+            const geometries = [
+                new THREE.RingGeometry(1, 1.5, 8),
+                new THREE.SphereGeometry(0.5, 16, 16),
+                new THREE.CylinderGeometry(0.3, 0.8, 1, 8),
+                new THREE.TorusGeometry(0.6, 0.2, 8, 20)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0xe9598b, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0xff6600, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x8000ff, wireframe: true, transparent: true, opacity: 0.3 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 15; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 30;
+                mesh.position.y = (Math.random() - 0.5) * 30;
+                mesh.position.z = (Math.random() - 0.5) * 30;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 15;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.003 + index * 0.001;
+                    mesh.rotation.y += 0.003 + index * 0.001;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.008;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Render products
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card-3d" data-id="${product.id}">
+                    <div class="product-image-container">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <div class="product-labels">
+                            ${product.labels.map(label => `
+                                <span class="product-label ${label.toLowerCase().includes('sale') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category">${product.category}</p>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">
+                            $${product.price.toFixed(2)}
+                            ${product.oldPrice ? `<span class="old-price">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                        </div>
+                        <div class="product-rating">
+                            ${Array.from({length: 5}, (_, i) => `
+                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
+                            `).join('')}
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
+                                <i class="fa fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
+                                <i class="fa fa-eye"></i> Quick View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Animate cards
+            gsap.fromTo('.product-card-3d', 
+                { opacity: 0, y: 50, rotationY: -15 },
+                { opacity: 1, y: 0, rotationY: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
+            );
+        }
+
+        // Filter products
+        function filterProducts() {
+            const sortBy = document.getElementById('sortFilter').value;
+            const sizeFilter = document.getElementById('sizeFilter').value;
+            const colorFilter = document.getElementById('colorFilter').value;
+            const priceFilter = document.getElementById('priceFilter').value;
+
+            filteredProducts = kurtisProducts.filter(product => {
+                if (sizeFilter && !product.sizes.includes(sizeFilter)) return false;
+                if (colorFilter && !product.colors.includes(colorFilter)) return false;
+                if (priceFilter) {
+                    if (priceFilter === '100+' && product.price <= 100) return false;
+                    if (priceFilter !== '100+') {
+                        const [min, max] = priceFilter.split('-').map(Number);
+                        if (product.price < min || product.price > max) return false;
+                    }
+                }
+                return true;
+            });
+
+            // Sort products
+            switch (sortBy) {
+                case 'price-low':
+                    filteredProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    filteredProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case 'rating':
+                    filteredProducts.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'newest':
+                    filteredProducts.sort((a, b) => b.id - a.id);
+                    break;
+                default:
+                    // Keep original order for featured
+                    break;
+            }
+
+            renderProducts(filteredProducts);
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = kurtisProducts.find(p => p.id === productId);
+            gsap.to(`.product-card-3d[data-id="${productId}"]`, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
+            
+            setTimeout(() => {
+                alert(`Added "${product.name}" to cart!`);
+            }, 200);
+        }
+
+        // Quick view
+        function quickView(productId) {
+            const product = kurtisProducts.find(p => p.id === productId);
+            const modal = document.getElementById('quickViewModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.innerHTML = `
+                <div style="display: flex; gap: 30px; padding: 30px;">
+                    <div style="flex: 1;">
+                        <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 style="color: #fff; margin-bottom: 15px;">${product.name}</h2>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">${product.description}</p>
+                        <div style="margin-bottom: 20px;">
+                            <span style="font-size: 1.5rem; color: var(--neon-pink); font-weight: 700;">$${product.price.toFixed(2)}</span>
+                            ${product.oldPrice ? `<span style="text-decoration: line-through; color: rgba(255,255,255,0.5); margin-left: 10px;">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="margin-bottom: 10px; color: #fff;">Sizes:</div>
+                            <div style="display: flex; gap: 10px;">
+                                ${product.sizes.map(size => `
+                                    <button style="padding: 8px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; border-radius: 20px; cursor: pointer; backdrop-filter: blur(10px);">
+                                        ${size.toUpperCase()}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 30px;">
+                            <div style="margin-bottom: 10px; color: #fff;">Colors:</div>
+                            <div style="display: flex; gap: 10px;">
+                                ${product.colors.map(color => `
+                                    <div style="width: 30px; height: 30px; background: ${color}; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer;"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <button onclick="addToCart(${product.id}); closeModal();" style="width: 100%; padding: 15px; background: var(--primary-gradient); border: none; border-radius: 25px; color: #fff; font-weight: 600; cursor: pointer;">
+                            <i class="fa fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('quickViewModal').style.display = 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            renderProducts(filteredProducts);
+            
+            // Add filter event listeners
+            ['sortFilter', 'sizeFilter', 'colorFilter', 'priceFilter'].forEach(id => {
+                document.getElementById(id).addEventListener('change', filterProducts);
+            });
+            
+            // Close modal on outside click
+            document.getElementById('quickViewModal').addEventListener('click', (e) => {
+                if (e.target.id === 'quickViewModal') {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
