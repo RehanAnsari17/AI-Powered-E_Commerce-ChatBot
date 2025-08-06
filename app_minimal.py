@@ -15,47 +15,47 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return render_template('home_new.html')
+    return render_template('home_immersive.html')
 
 @app.route('/chatbot')
 def chatbot():
-    return render_template('index.html')
+    return render_template('chatbot_3d.html')
 
 @app.route('/wishlist')
 def wishlist():
-    return render_template('wishlist.html')
+    return render_template('wishlist_3d.html')
 
 @app.route('/cart')
 def cart():
-    return render_template('cart.html')
+    return render_template('cart_3d.html')
 
 @app.route('/skirts')
 def skirts():
-    return render_template('skirts.html')
+    return render_template('skirts_3d.html')
 
 @app.route('/jeans')
 def jeans():
-    return render_template('jeans.html')
+    return render_template('jeans_3d.html')
 
 @app.route('/jumpsuits')
 def jumpsuits():
-    return render_template('jumpsuits.html')
+    return render_template('jumpsuits_3d.html')
 
 @app.route('/kurtis')
 def kurtis():
-    return render_template('kurtis.html')
+    return render_template('kurtis_3d.html')
 
 @app.route('/store')
 def store():
-    return render_template('store.html')
+    return render_template('store_3d.html')
 
 @app.route('/checkout')
 def checkout():
-    return render_template('checkout.html')
+    return render_template('checkout_3d.html')
 
 @app.route('/product')
 def product():
-    return render_template('product.html')
+    return render_template('product_3d.html')
 
 # ---------- SEARCH API (Simplified) ----------
 
