@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FashionBot - AI-Powered 3D Shopping Experience</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js for 3D effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #e9598b 0%, #d63384 50%, #b83d7a 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff6600 0%, #e55a00 50%, #cc4f00 100%);
+            --neon-pink: #ff0080;
+            --neon-blue: #0080ff;
+            --neon-purple: #8000ff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+            --text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            --glow-effect: 0 0 20px rgba(233, 89, 139, 0.6);
+            --hover-transform: translateY(-10px) scale(1.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            overflow-x: hidden;
+            background: #000;
+            color: #fff;
+        }
+
+        /* 3D Background Canvas */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, var(--neon-pink) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Glass Morphism Header */
+        .immersive-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            padding: 20px 0;
+        }
+
+        .logo-3d {
+            background: var(--primary-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: var(--text-shadow);
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from { filter: drop-shadow(0 0 5px var(--neon-pink)); }
+            to { filter: drop-shadow(0 0 20px var(--neon-pink)); }
+        }
+
+        /* 3D Search Bar */
+        .search-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .search-3d:hover::before {
+            left: 100%;
+        }
+
+        .search-3d:hover {
+            transform: scale(1.02);
+            box-shadow: var(--glow-effect);
+        }
+
+        .search-input-3d {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            flex: 1;
+            outline: none;
+        }
+
+        .search-input-3d::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-btn-3d {
+            background: var(--secondary-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+        }
+
+        .search-btn-3d:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.6);
+        }
+
+        /* Hero Section with 3D Elements */
+        .hero-3d {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(233, 89, 139, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 102, 0, 0.3) 0%, transparent 50%);
+            overflow: hidden;
+        }
+
+        .hero-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.pexels.com/photos/17486101/pexels-photo-17486101.png') center/cover;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .hero-content-3d {
+            z-index: 2;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero-title-3d {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--neon-pink), var(--neon-blue), #fff);
+            background-size: 300% 300%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease-in-out infinite;
+            text-shadow: var(--text-shadow);
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-subtitle-3d {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            text-shadow: var(--text-shadow);
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .cta-container-3d {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 1s both;
+        }
+
+        .btn-3d {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary-3d {
+            background: var(--primary-gradient);
+            color: #fff;
+        }
+
+        .btn-primary-3d:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--glow-effect), 0 15px 40px rgba(233, 89, 139, 0.4);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 2px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            transform: var(--hover-transform);
+            background: var(--secondary-gradient);
+            border-color: transparent;
+        }
+
+        /* 3D Category Cards */
+        .categories-3d {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-title-3d {
+            text-align: center;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: var(--text-shadow);
+        }
+
+        .section-subtitle-3d {
+            text-align: center;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .category-grid-3d {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .category-card-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .category-card-3d:hover::before {
+            opacity: 0.1;
+        }
+
+        .category-card-3d:hover {
+            transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
+            box-shadow: var(--glow-effect), 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .category-image-3d {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-card-3d:hover .category-image-3d {
+            transform: scale(1.1);
+        }
+
+        .category-content-3d {
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-name-3d {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            text-shadow: var(--text-shadow);
+        }
+
+        .category-description-3d {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .category-btn-3d {
+            background: var(--secondary-gradient);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.4);
+        }
+
+        .category-btn-3d:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 102, 0, 0.6);
+        }
+
+        /* Features Section with 3D Icons */
+        .features-3d {
+            padding: 100px 0;
+            background: var(--dark-glass);
+            backdrop-filter: blur(10px);
+        }
+
+        .features-grid-3d {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .feature-card-3d {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card-3d::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--neon-pink), transparent);
+            animation: rotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card-3d:hover::before {
+            opacity: 0.3;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .feature-card-3d:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--glow-effect);
+        }
+
+        .feature-icon-3d {
+            width: 100px;
+            height: 100px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 2.5rem;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(233, 89, 139, 0.4);
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-card-3d:hover .feature-icon-3d {
+            transform: scale(1.1) rotateY(360deg);
+        }
+
+        .feature-title-3d {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-description-3d {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Floating Action Button with 3D Effect */
+        .fab-3d {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 1000;
+            width: 80px;
+            height: 80px;
+            background: var(--secondary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: pulse 2s infinite;
+        }
+
+        .fab-3d:hover {
+            transform: scale(1.2) rotate(15deg);
+            box-shadow: var(--glow-effect), 0 15px 40px rgba(255, 102, 0, 0.6);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5); }
+            50% { box-shadow: 0 10px 30px rgba(255, 102, 0, 0.5), 0 0 0 20px rgba(255, 102, 0, 0.1); }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Navigation with Glass Effect */
+        .nav-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-links-3d {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-link-3d {
+            padding: 20px 30px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-link-3d::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link-3d:hover,
+        .nav-link-3d.active {
+            color: #fff;
+            background: rgba(233, 89, 139, 0.1);
+        }
+
+        .nav-link-3d:hover::before,
+        .nav-link-3d.active::before {
+            width: 80%;
+        }
+
+        /* Header Actions */
+        .header-actions-3d {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .action-btn-3d {
+            position: relative;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .action-btn-3d:hover {
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: var(--glow-effect);
+        }
+
+        .badge-3d {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--neon-pink);
+            color: #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 0, 128, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title-3d { font-size: 2.5rem; }
+            .section-title-3d { font-size: 2.5rem; }
+            .cta-container-3d { flex-direction: column; align-items: center; }
+            .nav-links-3d { flex-wrap: wrap; justify-content: center; }
+            .search-3d { margin: 10px; }
+            .category-grid-3d { grid-template-columns: 1fr; }
+            .features-grid-3d { grid-template-columns: 1fr; }
+            .fab-3d { bottom: 20px; right: 20px; width: 60px; height: 60px; }
+        }
+
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(233, 89, 139, 0.3);
+            border-top: 3px solid var(--neon-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- 3D Background Canvas -->
+    <canvas id="background-canvas"></canvas>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header class="immersive-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="row align-items-center">
+                    <!-- Logo -->
+                    <div class="col-md-3">
+                        <div class="logo-3d">
+                            ✨ FashionBot AI
+                        </div>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="col-md-6">
+                        <div class="search-3d">
+                            <select style="background: transparent; border: none; color: rgba(255,255,255,0.8); outline: none; margin-right: 15px;">
+                                <option value="">Categories</option>
+                                <option value="/kurtis">Kurtis</option>
+                                <option value="/jeans">Jeans</option>
+                                <option value="/skirts">Skirts</option>
+                                <option value="/jumpsuits">Jumpsuits</option>
+                            </select>
+                            <input type="text" class="search-input-3d" placeholder="Ask AI for fashion recommendations...">
+                            <button class="search-btn-3d">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-md-3">
+                        <div class="header-actions-3d">
+                            <a href="/wishlist" class="action-btn-3d">
+                                <i class="fa fa-heart"></i>
+                                <span class="badge-3d">2</span>
+                            </a>
+                            <a href="/cart" class="action-btn-3d">
+                                <i class="fa fa-shopping-cart"></i>
+                                <span class="badge-3d">3</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-3d">
+        <div class="container">
+            <ul class="nav-links-3d">
+                <li><a href="/" class="nav-link-3d active">Home</a></li>
+                <li><a href="/kurtis" class="nav-link-3d">Kurtis</a></li>
+                <li><a href="/skirts" class="nav-link-3d">Skirts</a></li>
+                <li><a href="/jeans" class="nav-link-3d">Jeans</a></li>
+                <li><a href="/jumpsuits" class="nav-link-3d">Jumpsuits</a></li>
+                <li><a href="/store" class="nav-link-3d">Store</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-3d">
+        <div class="hero-bg-overlay"></div>
+        <div class="container">
+            <div class="hero-content-3d">
+                <h1 class="hero-title-3d">Welcome to the Future of Fashion</h1>
+                <p class="hero-subtitle-3d">
+                    Experience AI-powered shopping with immersive 3D design. 
+                    Let our intelligent assistant guide you to your perfect style.
+                </p>
+                <div class="cta-container-3d">
+                    <a href="/chatbot" class="btn-3d btn-primary-3d">
+                        <i class="fa fa-robot"></i>
+                        Start AI Shopping
+                    </a>
+                    <a href="/store" class="btn-3d btn-secondary-3d">
+                        <i class="fa fa-cube"></i>
+                        Explore 3D Store
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-3d">
+        <div class="container">
+            <h2 class="section-title-3d">Explore Collections</h2>
+            <p class="section-subtitle-3d">
+                Dive into our curated 3D fashion universe designed by AI
+            </p>
+            
+            <div class="category-grid-3d">
+                <div class="category-card-3d" data-category="kurtis">
+                    <img src="../static/img/product1.jpg" alt="Kurtis Collection" class="category-image-3d">
+                    <div class="category-content-3d">
+                        <h3 class="category-name-3d">Kurtis Collection</h3>
+                        <p class="category-description-3d">Elegant traditional and modern kurta designs</p>
+                        <a href="/kurtis" class="category-btn-3d">
+                            Explore <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card-3d" data-category="skirts">
+                    <img src="../static/img/skirts1.jpg" alt="Skirts Collection" class="category-image-3d">
+                    <div class="category-content-3d">
+                        <h3 class="category-name-3d">Skirts Universe</h3>
+                        <p class="category-description-3d">From mini to maxi, every style you love</p>
+                        <a href="/skirts" class="category-btn-3d">
+                            Explore <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card-3d" data-category="jeans">
+                    <img src="../static/img/jeans6.jpg" alt="Jeans Collection" class="category-image-3d">
+                    <div class="category-content-3d">
+                        <h3 class="category-name-3d">Denim Dreams</h3>
+                        <p class="category-description-3d">Premium jeans for every occasion</p>
+                        <a href="/jeans" class="category-btn-3d">
+                            Explore <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card-3d" data-category="jumpsuits">
+                    <img src="../static/img/jumpsuit1.jpg" alt="Jumpsuits Collection" class="category-image-3d">
+                    <div class="category-content-3d">
+                        <h3 class="category-name-3d">Jumpsuit Galaxy</h3>
+                        <p class="category-description-3d">One-piece elegance and comfort</p>
+                        <a href="/jumpsuits" class="category-btn-3d">
+                            Explore <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-3d">
+        <div class="container">
+            <h2 class="section-title-3d">Why Choose Our AI Fashion Platform?</h2>
+            <div class="features-grid-3d">
+                <div class="feature-card-3d">
+                    <div class="feature-icon-3d">
+                        <i class="fa fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title-3d">AI-Powered Recommendations</h3>
+                    <p class="feature-description-3d">
+                        Our advanced AI learns your style preferences and suggests perfect outfits tailored just for you.
+                    </p>
+                </div>
+
+                <div class="feature-card-3d">
+                    <div class="feature-icon-3d">
+                        <i class="fa fa-cube"></i>
+                    </div>
+                    <h3 class="feature-title-3d">3D Immersive Experience</h3>
+                    <p class="feature-description-3d">
+                        Experience fashion in a whole new dimension with our interactive 3D shopping environment.
+                    </p>
+                </div>
+
+                <div class="feature-card-3d">
+                    <div class="feature-icon-3d">
+                        <i class="fa fa-rocket"></i>
+                    </div>
+                    <h3 class="feature-title-3d">Lightning Fast Delivery</h3>
+                    <p class="feature-description-3d">
+                        Get your fashion finds delivered at warp speed with our premium logistics network.
+                    </p>
+                </div>
+
+                <div class="feature-card-3d">
+                    <div class="feature-icon-3d">
+                        <i class="fa fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title-3d">Secure & Protected</h3>
+                    <p class="feature-description-3d">
+                        Shop with confidence using our military-grade security and buyer protection guarantees.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Action Button -->
+    <a href="/chatbot" class="fab-3d" title="Chat with AI Assistant">
+        <i class="fa fa-comments"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        // Loading Screen
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 1500);
+        });
+
+        // 3D Background Animation
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('background-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            // Create floating geometries
+            const geometries = [
+                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.SphereGeometry(0.5, 32, 32),
+                new THREE.ConeGeometry(0.5, 1, 32),
+                new THREE.TorusGeometry(0.5, 0.2, 16, 100)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ 
+                    color: 0xe9598b, 
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.3
+                }),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0xff6600, 
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.3
+                }),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x0080ff, 
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.3
+                })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 20; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 40;
+                mesh.position.y = (Math.random() - 0.5) * 40;
+                mesh.position.z = (Math.random() - 0.5) * 40;
+                
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 20;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.005 + index * 0.001;
+                    mesh.rotation.y += 0.005 + index * 0.001;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.01;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Category card interactions
+        document.querySelectorAll('.category-card-3d').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.5,
+                    rotationY: 10,
+                    rotationX: 5,
+                    scale: 1.05,
+                    ease: "power2.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.5,
+                    rotationY: 0,
+                    rotationX: 0,
+                    scale: 1,
+                    ease: "power2.out"
+                });
+            });
+        });
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            createParticles();
+            
+            // Animate elements on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.category-card-3d, .feature-card-3d').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(50px)';
+                el.style.transition = 'all 0.6s ease';
+                observer.observe(el);
+            });
+        });
+
+        // Search functionality
+        document.querySelector('.search-btn-3d').addEventListener('click', () => {
+            const searchInput = document.querySelector('.search-input-3d');
+            const query = searchInput.value.trim();
+            
+            if (query) {
+                // Simulate AI search
+                gsap.to('.search-3d', {
+                    duration: 0.3,
+                    scale: 1.1,
+                    ease: "power2.out"
+                });
+                
+                setTimeout(() => {
+                    window.location.href = '/chatbot?query=' + encodeURIComponent(query);
+                }, 300);
+            }
+        });
+
+        // Add enter key support for search
+        document.querySelector('.search-input-3d').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.querySelector('.search-btn-3d').click();
+            }
+        });
+    </script>
+</body>
+</html>
