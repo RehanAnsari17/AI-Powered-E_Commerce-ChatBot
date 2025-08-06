@@ -70,8 +70,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <div class="img-loading">Loading...</div>
                                 </div>
                                 <div class="card-body">
-                                    <h3 class="card-title">${result.name}</h3>
-                                    <p class="card-info">Color: ${result.colour} | Category: ${result.Category}</p>
+                                    <h3 class="card-title">${result.productDisplayName || 'Unnamed Product'}</h3>
+                                    <p class="card-info">
+                                        Color: ${result.baseColour || 'N/A'} | 
+                                        Category: ${result.masterCategory || 'N/A'}
+                                    </p>
                                 </div>
                             </div>
                         `;
