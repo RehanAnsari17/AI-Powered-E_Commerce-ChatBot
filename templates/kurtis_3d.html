@@ -548,12 +548,12 @@
                     <label style="color: #fff; margin-right: 10px;">Color:</label>
                     <select class="filter-select" id="colorFilter">
                         <option value="">All Colors</option>
-                        <option value="red">Red</option>
-                        <option value="blue">Blue</option>
-                        <option value="green">Green</option>
-                        <option value="black">Black</option>
-                        <option value="white">White</option>
-                        <option value="pink">Pink</option>
+                        <option value="Black">Black</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Red">Red</option>
+                        <option value="Green">Green</option>
+                        <option value="White">White</option>
+                        <option value="Pink">Pink</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -576,6 +576,9 @@
         <div class="container">
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be dynamically loaded here -->
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="seeMoreBtn" class="btn-3d btn-secondary-3d" style="padding:12px 30px;">See more</button>
             </div>
         </div>
     </section>
@@ -600,89 +603,14 @@
     <script src="../static/js/bootstrap.min.js"></script>
 
     <script>
+        let kurtisProducts = [];
+        let filteredProducts = [];
+        let nextOffset = null;
+        const PAGE_LIMIT = 48;
         // Sample product data
-        const kurtisProducts = [
-            {
-                id: 1,
-                name: "Elegant Floral Cotton Kurti",
-                category: "Kurtis",
-                price: 45.00,
-                oldPrice: 60.00,
-                image: "../static/img/product2.jpg",
-                labels: ["30% OFF", "NEW"],
-                rating: 4.5,
-                colors: ["red", "blue", "green"],
-                sizes: ["s", "m", "l", "xl"],
-                description: "Beautiful floral print cotton kurti perfect for casual wear"
-            },
-            {
-                id: 2,
-                name: "Designer Embroidered Kurti",
-                category: "Kurtis",
-                price: 68.00,
-                oldPrice: 85.00,
-                image: "../static/img/product3.jpg",
-                labels: ["20% OFF"],
-                rating: 4.8,
-                colors: ["black", "white", "pink"],
-                sizes: ["xs", "s", "m", "l"],
-                description: "Elegant embroidered kurti with intricate threadwork"
-            },
-            {
-                id: 3,
-                name: "Traditional Block Print Kurti",
-                category: "Kurtis",
-                price: 38.00,
-                oldPrice: 50.00,
-                image: "../static/img/product4.jpg",
-                labels: ["SALE"],
-                rating: 4.3,
-                colors: ["blue", "green", "red"],
-                sizes: ["m", "l", "xl", "xxl"],
-                description: "Handcrafted block print kurti with traditional patterns"
-            },
-            {
-                id: 4,
-                name: "Modern A-Line Kurti",
-                category: "Kurtis",
-                price: 55.00,
-                oldPrice: 70.00,
-                image: "../static/img/product5.jpg",
-                labels: ["TRENDING"],
-                rating: 4.6,
-                colors: ["black", "white"],
-                sizes: ["s", "m", "l"],
-                description: "Contemporary A-line kurti for the modern woman"
-            },
-            {
-                id: 5,
-                name: "Festive Golden Kurti",
-                category: "Kurtis",
-                price: 85.00,
-                oldPrice: 110.00,
-                image: "../static/img/product1.jpg",
-                labels: ["PREMIUM", "23% OFF"],
-                rating: 4.9,
-                colors: ["gold", "red", "green"],
-                sizes: ["xs", "s", "m", "l", "xl"],
-                description: "Luxurious golden kurti perfect for festivals and celebrations"
-            },
-            {
-                id: 6,
-                name: "Casual Striped Kurti",
-                category: "Kurtis",
-                price: 32.00,
-                oldPrice: 42.00,
-                image: "../static/img/product6.jpg",
-                labels: ["BESTSELLER"],
-                rating: 4.4,
-                colors: ["blue", "pink", "green"],
-                sizes: ["s", "m", "l", "xl"],
-                description: "Comfortable striped kurti perfect for everyday wear"
-            }
-        ];
+        
 
-        let filteredProducts = [...kurtisProducts];
+        //let filteredProducts = [...kurtisProducts];
 
         // Initialize 3D background
         function init3DBackground() {
@@ -747,51 +675,69 @@
         }
 
         // Render products
-        function renderProducts(products) {
+        function renderProducts(products, append=false) {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = products.map(product => `
+            const html = products.map(product => `
                 <div class="product-card-3d" data-id="${product.id}">
                     <div class="product-image-container">
-                        <img src="${product.image}" alt="${product.name}" class="product-image">
-                        <div class="product-labels">
-                            ${product.labels.map(label => `
-                                <span class="product-label ${label.toLowerCase().includes('sale') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
-                            `).join('')}
-                        </div>
+                        <img src="${product.image_url}" alt="${product.productDisplayName}" class="product-image">
                     </div>
                     <div class="product-info">
-                        <p class="product-category">${product.category}</p>
-                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-category">${product.masterCategory}</p>
+                        <h3 class="product-name">${product.productDisplayName}</h3>
                         <div class="product-price">
-                            $${product.price.toFixed(2)}
-                            ${product.oldPrice ? `<span class="old-price">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                            $${product.price ? product.price.toFixed(2) : (Math.random() * 100).toFixed(2)}
                         </div>
                         <div class="product-rating">
-                            ${Array.from({length: 5}, (_, i) => `
-                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
-                            `).join('')}
-                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                            <i class="fa fa-star"></i> 4.5
                         </div>
                         <div class="product-actions">
-                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
-                                <i class="fa fa-shopping-cart"></i> Add to Cart
-                            </button>
-                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
-                                <i class="fa fa-eye"></i> Quick View
-                            </button>
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart('${product.id}')">Add to Cart</button>
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView('${product.id}')">Quick View</button>
                         </div>
                     </div>
                 </div>
             `).join('');
-
-            // Animate cards
-            gsap.fromTo('.product-card-3d', 
-                { opacity: 0, y: 50, rotationY: -15 },
-                { opacity: 1, y: 0, rotationY: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
-            );
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
         }
 
-        // Filter products
+        async function loadKurtisFromCloud() {
+            try {
+                const params = new URLSearchParams();
+                const gender = 'Women'; // Default audience for kurtis
+                params.set('gender', gender);
+                params.set('page_limit', String(PAGE_LIMIT));
+
+                const response = await fetch(`/api/kurtis?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    kurtisProducts = data.results.map((product, index) => ({
+                        ...product,
+                        id: product.id || index,
+                        price: Math.random() * 100,
+                        rating: 4.5,
+                        sizes: ["s", "m", "l", "xl"],
+                        colors: [product.baseColour].filter(Boolean),
+                        oldPrice: null,
+                        description: product.productDisplayName || "No description available"
+                    }));
+                    filteredProducts = [...kurtisProducts];
+                    nextOffset = data.next_offset || null;
+                    renderProducts(filteredProducts);
+                } else {
+                    document.getElementById('productsGrid').innerHTML = '<p>No kurtis found.</p>';
+                }
+
+            } catch (err) {
+                console.error("❌ Failed to fetch kurtis:", err);
+            }
+        }
+
         function filterProducts() {
             const sortBy = document.getElementById('sortFilter').value;
             const sizeFilter = document.getElementById('sizeFilter').value;
@@ -799,13 +745,14 @@
             const priceFilter = document.getElementById('priceFilter').value;
 
             filteredProducts = kurtisProducts.filter(product => {
-                if (sizeFilter && !product.sizes.includes(sizeFilter)) return false;
-                if (colorFilter && !product.colors.includes(colorFilter)) return false;
+                if (sizeFilter && !(product.sizes || []).includes(sizeFilter)) return false;
+                if (colorFilter && !(product.colors || []).includes(colorFilter)) return false;
                 if (priceFilter) {
-                    if (priceFilter === '100+' && product.price <= 100) return false;
+                    const price = product.price || 0;
+                    if (priceFilter === '100+' && price <= 100) return false;
                     if (priceFilter !== '100+') {
                         const [min, max] = priceFilter.split('-').map(Number);
-                        if (product.price < min || product.price > max) return false;
+                        if (price < min || price > max) return false;
                     }
                 }
                 return true;
@@ -820,22 +767,20 @@
                     filteredProducts.sort((a, b) => b.price - a.price);
                     break;
                 case 'rating':
-                    filteredProducts.sort((a, b) => b.rating - a.rating);
+                    filteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
                     break;
                 case 'newest':
                     filteredProducts.sort((a, b) => b.id - a.id);
-                    break;
-                default:
-                    // Keep original order for featured
                     break;
             }
 
             renderProducts(filteredProducts);
         }
 
-        // Add to cart
         function addToCart(productId) {
-            const product = kurtisProducts.find(p => p.id === productId);
+            const product = kurtisProducts.find(p => p.id == productId);
+            if (!product) return;
+
             gsap.to(`.product-card-3d[data-id="${productId}"]`, {
                 scale: 0.95,
                 duration: 0.1,
@@ -843,25 +788,26 @@
                 repeat: 1,
                 ease: "power2.out"
             });
-            
+
             setTimeout(() => {
-                alert(`Added "${product.name}" to cart!`);
+                alert(`Added "${product.productDisplayName}" to cart!`);
             }, 200);
         }
 
-        // Quick view
         function quickView(productId) {
-            const product = kurtisProducts.find(p => p.id === productId);
+            const product = kurtisProducts.find(p => p.id == productId);
+            if (!product) return;
+
             const modal = document.getElementById('quickViewModal');
             const modalContent = document.getElementById('modalContent');
-            
+
             modalContent.innerHTML = `
                 <div style="display: flex; gap: 30px; padding: 30px;">
                     <div style="flex: 1;">
-                        <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px;">
+                        <img src="${product.image_url}" alt="${product.productDisplayName}" style="width: 100%; border-radius: 15px;">
                     </div>
                     <div style="flex: 1;">
-                        <h2 style="color: #fff; margin-bottom: 15px;">${product.name}</h2>
+                        <h2 style="color: #fff; margin-bottom: 15px;">${product.productDisplayName}</h2>
                         <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">${product.description}</p>
                         <div style="margin-bottom: 20px;">
                             <span style="font-size: 1.5rem; color: var(--neon-pink); font-weight: 700;">$${product.price.toFixed(2)}</span>
@@ -870,7 +816,7 @@
                         <div style="margin-bottom: 20px;">
                             <div style="margin-bottom: 10px; color: #fff;">Sizes:</div>
                             <div style="display: flex; gap: 10px;">
-                                ${product.sizes.map(size => `
+                                ${(product.sizes || []).map(size => `
                                     <button style="padding: 8px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; border-radius: 20px; cursor: pointer; backdrop-filter: blur(10px);">
                                         ${size.toUpperCase()}
                                     </button>
@@ -880,18 +826,18 @@
                         <div style="margin-bottom: 30px;">
                             <div style="margin-bottom: 10px; color: #fff;">Colors:</div>
                             <div style="display: flex; gap: 10px;">
-                                ${product.colors.map(color => `
+                                ${(product.colors || []).map(color => `
                                     <div style="width: 30px; height: 30px; background: ${color}; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer;"></div>
                                 `).join('')}
                             </div>
                         </div>
-                        <button onclick="addToCart(${product.id}); closeModal();" style="width: 100%; padding: 15px; background: var(--primary-gradient); border: none; border-radius: 25px; color: #fff; font-weight: 600; cursor: pointer;">
+                        <button onclick="addToCart('${product.id}'); closeModal();" style="width: 100%; padding: 15px; background: var(--primary-gradient); border: none; border-radius: 25px; color: #fff; font-weight: 600; cursor: pointer;">
                             <i class="fa fa-shopping-cart"></i> Add to Cart
                         </button>
                     </div>
                 </div>
             `;
-            
+
             modal.style.display = 'flex';
         }
 
@@ -899,17 +845,77 @@
             document.getElementById('quickViewModal').style.display = 'none';
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            init3DBackground();
-            renderProducts(filteredProducts);
-            
-            // Add filter event listeners
-            ['sortFilter', 'sizeFilter', 'colorFilter', 'priceFilter'].forEach(id => {
-                document.getElementById(id).addEventListener('change', filterProducts);
+            loadKurtisFromCloud();
+
+            // Local sort/size/price filters
+            ['sortFilter', 'sizeFilter', 'priceFilter'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', filterProducts);
             });
-            
-            // Close modal on outside click
+
+            // Server-side colour filter to exactly match Qdrant metadata
+            const colorEl = document.getElementById('colorFilter');
+            if (colorEl) {
+                colorEl.addEventListener('change', async () => {
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    if (colorEl.value) params.set('colour', colorEl.value);
+
+                    const res = await fetch(`/api/kurtis?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results) {
+                        kurtisProducts = data.results.map((product, index) => ({
+                            ...product,
+                            id: product.id || index,
+                            price: Math.random() * 100,
+                            rating: 4.5,
+                            sizes: ["s", "m", "l", "xl"],
+                            colors: [product.baseColour].filter(Boolean),
+                            oldPrice: null,
+                            description: product.productDisplayName || "No description available"
+                        }));
+                        filteredProducts = [...kurtisProducts];
+                        nextOffset = data.next_offset || null;
+                        renderProducts(filteredProducts);
+                    }
+                });
+            }
+
+            // See more pagination
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            if (seeMoreBtn) {
+                seeMoreBtn.addEventListener('click', async () => {
+                    if (!nextOffset) return;
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    if (document.getElementById('colorFilter').value) {
+                        params.set('colour', document.getElementById('colorFilter').value);
+                    }
+                    params.set('page_offset', String(nextOffset));
+
+                    const res = await fetch(`/api/kurtis?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        const extra = data.results.map((product, index) => ({
+                            ...product,
+                            id: product.id || `${Date.now()}_${index}`,
+                            price: Math.random() * 100,
+                            rating: 4.5,
+                            sizes: ["s", "m", "l", "xl"],
+                            colors: [product.baseColour].filter(Boolean),
+                            oldPrice: null,
+                            description: product.productDisplayName || "No description available"
+                        }));
+                        kurtisProducts = kurtisProducts.concat(extra);
+                        nextOffset = data.next_offset || null;
+                        filterProducts();
+                    }
+                });
+            }
+
             document.getElementById('quickViewModal').addEventListener('click', (e) => {
                 if (e.target.id === 'quickViewModal') {
                     closeModal();
