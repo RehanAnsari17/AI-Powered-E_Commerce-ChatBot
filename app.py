@@ -233,6 +233,8 @@ def search():
     try:
         data = request.json
         query = data.get('query', '')
+        offset = data.get('offset', 0)
+        limit = data.get('limit', 12)
 
         if not query.strip():
             return jsonify({"results": [], "message": "Please provide a query."}), 400
@@ -251,12 +253,24 @@ def search():
                 colour=parsed_data.get("colour", "NA"),
                 individual_category=parsed_data.get("Individual_category", "NA"),
                 category=parsed_data.get("Category", "NA"),
-                category_by_gender=parsed_data.get("category_by_Gender", "NA")
+                category_by_gender=parsed_data.get("category_by_Gender", "NA"),
+                top_k=limit + offset  # Get more results to support pagination
             )
 
+            # Apply pagination
+            paginated_results = results[offset:offset + limit]
+            has_more = len(results) > offset + limit
+            total_count = len(results)
+
             return jsonify({
-                "results": results,
-                "message": "Here are some recommended products based on your query."
+                "results": paginated_results,
+                "message": "Here are some recommended products based on your query.",
+                "pagination": {
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": has_more,
+                    "total_count": total_count
+                }
             })
 
         else:
@@ -264,6 +278,51 @@ def search():
                 "results": [],
                 "message": parsed_data.get("FOLLOW_UP_MESSAGE", "Please provide more product details.")
             })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "results": [],
+            "error": f"Internal Server Error: {str(e)}"
+        }), 500
+
+@app.route('/search/more', methods=['POST'])
+def search_more():
+    """Load more products for an existing search query"""
+    try:
+        data = request.json
+        query = data.get('query', '')
+        offset = data.get('offset', 0)
+        limit = data.get('limit', 6)
+        filters = data.get('filters', {})
+
+        if not query.strip():
+            return jsonify({"results": [], "message": "Please provide a query."}), 400
+
+        # Use the same search logic but with different offset
+        results = search_collection(
+            query_text=query,
+            colour=filters.get("colour", "NA"),
+            individual_category=filters.get("individual_category", "NA"),
+            category=filters.get("category", "NA"),
+            category_by_gender=filters.get("category_by_gender", "NA"),
+            top_k=offset + limit
+        )
+
+        # Apply pagination
+        paginated_results = results[offset:offset + limit]
+        has_more = len(results) > offset + limit
+
+        return jsonify({
+            "results": paginated_results,
+            "pagination": {
+                "offset": offset,
+                "limit": limit,
+                "has_more": has_more,
+                "total_count": len(results)
+            }
+        })
 
     except Exception as e:
         import traceback
