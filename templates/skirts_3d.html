@@ -588,6 +588,9 @@
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be dynamically loaded here -->
             </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="seeMoreBtn" class="btn-3d btn-secondary-3d" style="padding:12px 30px;">See more</button>
+            </div>
         </div>
     </section>
 
@@ -631,82 +634,11 @@
     <script src="../static/js/bootstrap.min.js"></script>
 
     <script>
-        // Sample skirts data
-        const skirtsProducts = [
-            {
-                id: 1,
-                name: "Floral Mini Skirt",
-                category: "Skirts",
-                type: "mini",
-                price: 35.00,
-                oldPrice: 45.00,
-                image: "../static/img/skirts1.jpg",
-                labels: ["TRENDING", "22% OFF"],
-                rating: 4.4,
-                description: "Charming floral print mini skirt perfect for summer days"
-            },
-            {
-                id: 2,
-                name: "A-Line Denim Skirt",
-                category: "Skirts",
-                type: "midi",
-                price: 40.00,
-                oldPrice: 55.00,
-                image: "../static/img/Skirts2.jpg",
-                labels: ["BESTSELLER"],
-                rating: 4.6,
-                description: "Classic A-line denim skirt with vintage vibes"
-            },
-            {
-                id: 3,
-                name: "Pleated Midi Skirt",
-                category: "Skirts",
-                type: "midi",
-                price: 48.00,
-                oldPrice: 65.00,
-                image: "../static/img/skirts3.jpg",
-                labels: ["NEW", "26% OFF"],
-                rating: 4.5,
-                description: "Elegant pleated midi skirt for sophisticated occasions"
-            },
-            {
-                id: 4,
-                name: "Maxi Boho Skirt",
-                category: "Skirts",
-                type: "maxi",
-                price: 52.00,
-                oldPrice: 70.00,
-                image: "../static/img/skirts4.jpg",
-                labels: ["BOHO STYLE"],
-                rating: 4.7,
-                description: "Flowing maxi skirt with bohemian prints and patterns"
-            },
-            {
-                id: 5,
-                name: "Professional Pencil Skirt",
-                category: "Skirts",
-                type: "formal",
-                price: 45.00,
-                oldPrice: 60.00,
-                image: "../static/img/skirts5.jpg",
-                labels: ["OFFICE WEAR"],
-                rating: 4.3,
-                description: "Tailored pencil skirt perfect for professional settings"
-            },
-            {
-                id: 6,
-                name: "Tiered Ruffle Skirt",
-                category: "Skirts",
-                type: "midi",
-                price: 38.00,
-                oldPrice: 50.00,
-                image: "../static/img/skirts6.jpg",
-                labels: ["ROMANTIC", "24% OFF"],
-                rating: 4.2,
-                description: "Romantic tiered ruffle skirt with feminine charm"
-            }
-        ];
-
+        // Dynamic skirts data from API
+        let skirtsProducts = [];
+        let filteredProducts = [];
+        let nextOffset = null;
+        const PAGE_LIMIT = 48;
         let currentFilter = 'all';
 
         // Initialize 3D background
@@ -773,42 +705,47 @@
         }
 
         // Render products
-        function renderProducts(products) {
+        function renderProducts(products, append=false) {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = products.map(product => `
-                <div class="product-card-3d" data-type="${product.type}">
+            const html = products.map(product => `
+                <div class="product-card-3d" data-type="${product.type || 'midi'}">
                     <div class="product-image-container">
-                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <img src="${product.image || product.image_url}" alt="${product.name || product.productDisplayName || 'Skirt'}" class="product-image">
                         <div class="product-labels">
-                            ${product.labels.map(label => `
+                            ${(product.labels || []).map(label => `
                                 <span class="product-label ${label.toLowerCase().includes('sale') || label.includes('OFF') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="product-info">
-                        <p class="product-category">${product.category}</p>
-                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-category">${product.category || product.masterCategory || 'Skirts'}</p>
+                        <h3 class="product-name">${product.name || product.productDisplayName || 'Skirt'}</h3>
                         <div class="product-price">
-                            $${product.price.toFixed(2)}
-                            ${product.oldPrice ? `<span class="old-price">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                            $${(product.price || Math.random()*100).toFixed(2)}
+                            ${product.oldPrice ? `<span class="old-price">$${(product.oldPrice).toFixed(2)}</span>` : ''}
                         </div>
                         <div class="product-rating">
                             ${Array.from({length: 5}, (_, i) => `
-                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
+                                <i class="fa fa-star${i < Math.floor(product.rating || 4.5) ? '' : (i < (product.rating || 4.5) ? '-half' : '-o')}"></i>
                             `).join('')}
-                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${(product.rating || 4.5).toFixed(1)})</span>
                         </div>
                         <div class="product-actions">
-                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id || 0})">
                                 <i class="fa fa-shopping-cart"></i> Add to Cart
                             </button>
-                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id || 0})">
                                 <i class="fa fa-eye"></i> View
                             </button>
                         </div>
                     </div>
                 </div>
             `).join('');
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
 
             // Animate cards
             gsap.fromTo('.product-card-3d', 
@@ -850,20 +787,52 @@
             });
             
             setTimeout(() => {
-                alert(`Added "${product.name}" to cart!`);
+                alert(`Added "${product.name || product.productDisplayName}" to cart!`);
             }, 200);
         }
 
         // Quick view
         function quickView(productId) {
             const product = skirtsProducts.find(p => p.id === productId);
-            alert(`Viewing "${product.name}"\n\n${product.description}\n\nPrice: $${product.price.toFixed(2)}\nRating: ${product.rating}/5`);
+            alert(`Viewing "${product.name || product.productDisplayName}"\n\n${(product.description || '')}\n\nPrice: $${(product.price || Math.random()*100).toFixed(2)}\nRating: ${(product.rating || 4.5)}/5`);
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             init3DBackground();
-            renderProducts(skirtsProducts);
+
+            // Initial load from API
+            (async () => {
+                try {
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    const res = await fetch(`/api/skirts?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        skirtsProducts = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || i,
+                            type: 'midi',
+                            rating: 4.5,
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Skirts',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        filteredProducts = [...skirtsProducts];
+                        nextOffset = data.next_offset || null;
+                        renderProducts(filteredProducts);
+                    } else {
+                        filteredProducts = skirtsProducts;
+                        renderProducts(filteredProducts);
+                    }
+                } catch (e) {
+                    filteredProducts = skirtsProducts;
+                    renderProducts(filteredProducts);
+                }
+            })();
             
             // Add showcase item event listeners
             document.querySelectorAll('.showcase-item').forEach(item => {
@@ -914,6 +883,37 @@
                     });
                 });
             });
+
+            // See more pagination
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            if (seeMoreBtn) {
+                seeMoreBtn.addEventListener('click', async () => {
+                    if (!nextOffset) return;
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    params.set('page_offset', String(nextOffset));
+                    const res = await fetch(`/api/skirts?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        const extra = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || `${Date.now()}_${i}`,
+                            type: 'midi',
+                            rating: 4.5,
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Skirts',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        skirtsProducts = skirtsProducts.concat(extra);
+                        filteredProducts = skirtsProducts;
+                        nextOffset = data.next_offset || null;
+                        renderProducts(extra, true);
+                    }
+                });
+            }
         });
     </script>
 </body>
