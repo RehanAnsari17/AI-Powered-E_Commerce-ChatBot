@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jumpsuit Galaxy - 3D Fashion Collection</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --jumpsuit-gradient: linear-gradient(135deg, #8a2be2 0%, #9932cc 50%, #ba55d3 100%);
+            --galaxy-gradient: linear-gradient(135deg, #4b0082 0%, #663399 50%, #800080 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff6600 0%, #e55a00 50%, #cc4f00 100%);
+            --neon-purple: #8a2be2;
+            --neon-violet: #9932cc;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--jumpsuit-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .nav-3d {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-3d a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .nav-3d a:hover,
+        .nav-3d a.active {
+            color: #fff;
+            background: var(--jumpsuit-gradient);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        /* Hero Section */
+        .hero-section-3d {
+            padding: 100px 0;
+            text-align: center;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(138, 43, 226, 0.3) 0%, transparent 50%),
+                url('https://images.pexels.com/photos/2235071/pexels-photo-2235071.jpeg') center/cover;
+            position: relative;
+        }
+
+        .hero-section-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--neon-purple), #fff);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Jumpsuit Types Section */
+        .jumpsuit-types {
+            padding: 80px 0;
+            background: var(--dark-glass);
+            backdrop-filter: blur(10px);
+        }
+
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .type-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--neon-purple), transparent);
+            animation: rotate 6s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .type-card:hover::before {
+            opacity: 0.2;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .type-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(138, 43, 226, 0.3);
+        }
+
+        .type-card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .type-icon {
+            font-size: 3rem;
+            background: var(--jumpsuit-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .type-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .type-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .type-badge {
+            background: var(--jumpsuit-gradient);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--jumpsuit-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 60px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .product-card-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+
+        .product-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--jumpsuit-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .product-card-3d:hover::before {
+            opacity: 0.1;
+        }
+
+        .product-card-3d:hover {
+            transform: translateY(-15px) rotateY(5deg) rotateX(-5deg);
+            box-shadow: 0 25px 50px rgba(138, 43, 226, 0.3);
+        }
+
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 350px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-card-3d:hover .product-image {
+            transform: scale(1.1) rotate(-1deg);
+        }
+
+        .product-labels {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 3;
+        }
+
+        .product-label {
+            background: var(--neon-violet);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(153, 50, 204, 0.4);
+        }
+
+        .product-label.sale {
+            background: var(--secondary-gradient);
+        }
+
+        .product-label.new {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .product-info {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-category {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--neon-purple);
+            margin-bottom: 15px;
+        }
+
+        .product-price .old-price {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
+
+        .product-rating {
+            color: #ffc107;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .product-features {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background: var(--dark-glass);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-3d {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary-3d {
+            background: var(--jumpsuit-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-primary-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(138, 43, 226, 0.6);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            background: var(--secondary-gradient);
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        /* Style Guide */
+        .style-guide {
+            padding: 80px 0;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(153, 50, 204, 0.1));
+        }
+
+        .style-chart {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            overflow-x: auto;
+        }
+
+        .style-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+        }
+
+        .style-table th,
+        .style-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .style-table th {
+            background: var(--jumpsuit-gradient);
+            font-weight: 600;
+        }
+
+        .style-table td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Floating Action Button */
+        .fab-3d {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--jumpsuit-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .fab-3d:hover {
+            transform: scale(1.1) rotate(-15deg);
+            box-shadow: 0 15px 40px rgba(138, 43, 226, 0.7);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5); }
+            50% { box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5), 0 0 0 15px rgba(138, 43, 226, 0.1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .section-title { font-size: 2rem; }
+            .nav-3d { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .products-grid { grid-template-columns: 1fr; }
+            .types-grid { grid-template-columns: 1fr; }
+            .fab-3d { bottom: 20px; right: 20px; width: 60px; height: 60px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div class="logo-3d">🌌 Jumpsuit Galaxy</div>
+                </div>
+                <div class="col-md-6">
+                    <ul class="nav-3d">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/kurtis">Kurtis</a></li>
+                        <li><a href="/skirts">Skirts</a></li>
+                        <li><a href="/jeans">Jeans</a></li>
+                        <li><a href="/jumpsuits" class="active">Jumpsuits</a></li>
+                        <li><a href="/store">Store</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a href="/cart" style="color: #fff; margin-right: 20px;"><i class="fa fa-shopping-cart"></i> <span style="background: var(--neon-purple); padding: 2px 8px; border-radius: 50%; font-size: 12px;">3</span></a>
+                    <a href="/wishlist" style="color: #fff;"><i class="fa fa-heart"></i> <span style="background: var(--neon-purple); padding: 2px 8px; border-radius: 50%; font-size: 12px;">2</span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section-3d">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Jumpsuit Galaxy</h1>
+                <p class="hero-subtitle">Discover one-piece elegance and comfort in our stellar jumpsuit collection</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jumpsuit Types -->
+    <section class="jumpsuit-types">
+        <div class="container">
+            <h2 class="section-title">Explore Jumpsuit Styles</h2>
+            <div class="types-grid">
+                <div class="type-card" data-type="casual">
+                    <div class="type-card-content">
+                        <div class="type-icon">👗</div>
+                        <div class="type-title">Casual Jumpsuits</div>
+                        <div class="type-description">Comfortable everyday wear for relaxed occasions</div>
+                        <div class="type-badge">Everyday</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="formal">
+                    <div class="type-card-content">
+                        <div class="type-icon">💼</div>
+                        <div class="type-title">Formal Jumpsuits</div>
+                        <div class="type-description">Sophisticated pieces for office and business</div>
+                        <div class="type-badge">Professional</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="party">
+                    <div class="type-card-content">
+                        <div class="type-icon">✨</div>
+                        <div class="type-title">Party Jumpsuits</div>
+                        <div class="type-description">Glamorous outfits for special events</div>
+                        <div class="type-badge">Glamorous</div>
+                    </div>
+                </div>
+                <div class="type-card" data-type="wide-leg">
+                    <div class="type-card-content">
+                        <div class="type-icon">🌊</div>
+                        <div class="type-title">Wide Leg</div>
+                        <div class="type-description">Flowing silhouettes for bohemian style</div>
+                        <div class="type-badge">Bohemian</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <h2 class="section-title">Featured Jumpsuits</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="seeMoreBtn" class="btn-3d btn-secondary-3d" style="padding:12px 30px;">See more</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Style Guide -->
+    <section class="style-guide">
+        <div class="container">
+            <h2 class="section-title">Jumpsuit Styling Guide</h2>
+            <div class="style-chart">
+                <table class="style-table">
+                    <thead>
+                        <tr>
+                            <th>Occasion</th>
+                            <th>Style</th>
+                            <th>Accessories</th>
+                            <th>Footwear</th>
+                            <th>Tips</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Casual Day</td>
+                            <td>Loose-fit, Cotton</td>
+                            <td>Canvas bag, Simple jewelry</td>
+                            <td>Sneakers, Flats</td>
+                            <td>Layer with denim jacket</td>
+                        </tr>
+                        <tr>
+                            <td>Office</td>
+                            <td>Tailored, Structured</td>
+                            <td>Belt, Professional bag</td>
+                            <td>Heels, Loafers</td>
+                            <td>Add blazer for meetings</td>
+                        </tr>
+                        <tr>
+                            <td>Evening Out</td>
+                            <td>Fitted, Luxe fabric</td>
+                            <td>Statement jewelry, Clutch</td>
+                            <td>Heels, Ankle boots</td>
+                            <td>Bold makeup and hair</td>
+                        </tr>
+                        <tr>
+                            <td>Weekend</td>
+                            <td>Wide-leg, Relaxed</td>
+                            <td>Crossbody bag, Hat</td>
+                            <td>Sandals, Espadrilles</td>
+                            <td>Perfect for brunch dates</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Action Button -->
+    <a href="/chatbot" class="fab-3d" title="Get Style Advice">
+        <i class="fa fa-magic"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        // Dynamic state
+        let jumpsuitProducts = [];
+        let filteredProducts = [];
+        let nextOffset = null;
+        const PAGE_LIMIT = 48;
+        let currentFilter = 'all';
+
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create jumpsuit-themed geometries
+            const geometries = [
+                // CapsuleGeometry is not available in r128 → use common primitives
+                new THREE.BoxGeometry(0.8, 1.6, 0.8),
+                new THREE.CylinderGeometry(0.3, 0.8, 2, 8),
+                new THREE.SphereGeometry(0.6, 16, 16),
+                new THREE.TorusGeometry(0.7, 0.3, 8, 20)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0x8a2be2, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x9932cc, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0xba55d3, wireframe: true, transparent: true, opacity: 0.3 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 18; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 35;
+                mesh.position.y = (Math.random() - 0.5) * 35;
+                mesh.position.z = (Math.random() - 0.5) * 35;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 20;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.002 + index * 0.0003;
+                    mesh.rotation.y += 0.002 + index * 0.0003;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.006;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Render products
+        function renderProducts(products, append=false) {
+            const grid = document.getElementById('productsGrid');
+            const html = products.map(product => `
+                <div class="product-card-3d" data-type="${product.type || 'casual'}">
+                    <div class="product-image-container">
+                        <img src="${product.image || product.image_url}" alt="${product.name || product.productDisplayName || 'Jumpsuit'}" class="product-image">
+                        <div class="product-labels">
+                            ${(product.labels || []).map(label => `
+                                <span class="product-label ${label.toLowerCase().includes('sale') || label.includes('OFF') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-category">${product.category || product.masterCategory || 'Jumpsuits'}</p>
+                        <h3 class="product-name">${product.name || product.productDisplayName || 'Jumpsuit'}</h3>
+                        <div class="product-price">
+                            $${(product.price || Math.random()*100).toFixed(2)}
+                            ${product.oldPrice ? `<span class="old-price">$${(product.oldPrice).toFixed(2)}</span>` : ''}
+                        </div>
+                        <div class="product-rating">
+                            ${Array.from({length: 5}, (_, i) => `
+                                <i class="fa fa-star${i < Math.floor(product.rating || 4.5) ? '' : (i < (product.rating || 4.5) ? '-half' : '-o')}"></i>
+                            `).join('')}
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${(product.rating || 4.5).toFixed(1)})</span>
+                        </div>
+                        <div class="product-features">
+                            ${(product.features || []).map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id || 0})">
+                                <i class="fa fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id || 0})">
+                                <i class="fa fa-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
+
+            // Animate cards
+            gsap.fromTo('.product-card-3d', 
+                { opacity: 0, y: 50, rotationY: 15 },
+                { opacity: 1, y: 0, rotationY: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
+            );
+        }
+
+        // Filter products by type
+        function filterProducts(type) {
+            currentFilter = type;
+            const filtered = type === 'all' ? jumpsuitProducts : jumpsuitProducts.filter(p => p.type === type);
+            renderProducts(filtered);
+            
+            // Update active type card
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.style.background = 'var(--glass-bg)';
+                card.style.transform = 'scale(1)';
+            });
+            
+            if (type !== 'all') {
+                const activeCard = document.querySelector(`[data-type="${type}"]`);
+                if (activeCard) {
+                    activeCard.style.background = 'rgba(138, 43, 226, 0.2)';
+                    activeCard.style.transform = 'scale(1.05)';
+                }
+            }
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = jumpsuitProducts.find(p => p.id === productId);
+            gsap.to(`[data-type="${product.type}"]`, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
+            
+            setTimeout(() => {
+                alert(`Added "${product.name || product.productDisplayName}" to cart!`);
+            }, 200);
+        }
+
+        // Quick view
+        function quickView(productId) {
+            const product = jumpsuitProducts.find(p => p.id === productId);
+            alert(`${product.name || product.productDisplayName}\n\n${(product.description || '')}\n\nFeatures: ${(product.features || []).join(', ')}\n\nPrice: $${(product.price || Math.random()*100).toFixed(2)}\nRating: ${(product.rating || 4.5)}/5`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+
+            (async () => {
+                try {
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    const res = await fetch(`/api/jumpsuits?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        jumpsuitProducts = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || i,
+                            type: 'casual',
+                            rating: 4.5,
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Jumpsuits',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        filteredProducts = [...jumpsuitProducts];
+                        nextOffset = data.next_offset || null;
+                        renderProducts(filteredProducts);
+                    } else {
+                        filteredProducts = jumpsuitProducts;
+                        renderProducts(filteredProducts);
+                    }
+                } catch (e) {
+                    filteredProducts = jumpsuitProducts;
+                    renderProducts(filteredProducts);
+                }
+            })();
+            
+            // Add type card event listeners
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const type = card.getAttribute('data-type');
+                    filterProducts(type);
+                });
+                
+                // 3D hover effects
+                card.addEventListener('mouseenter', () => {
+                    gsap.to(card, {
+                        rotationY: -8,
+                        rotationX: 5,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        rotationY: 0,
+                        rotationX: 0,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+            });
+
+            // See more pagination
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            if (seeMoreBtn) {
+                seeMoreBtn.addEventListener('click', async () => {
+                    if (!nextOffset) return;
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    params.set('page_offset', String(nextOffset));
+                    const res = await fetch(`/api/jumpsuits?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        const extra = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || `${Date.now()}_${i}`,
+                            type: 'casual',
+                            rating: 4.5,
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Jumpsuits',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        jumpsuitProducts = jumpsuitProducts.concat(extra);
+                        filteredProducts = jumpsuitProducts;
+                        nextOffset = data.next_offset || null;
+                        renderProducts(extra, true);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
