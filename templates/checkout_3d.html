@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Secure Checkout - 3D Fashion Experience</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --secure-gradient: linear-gradient(135deg, #00c853 0%, #4caf50 50%, #66bb6a 100%);
+            --payment-gradient: linear-gradient(135deg, #2196f3 0%, #1976d2 50%, #1565c0 100%);
+            --warning-gradient: linear-gradient(135deg, #ff9800 0%, #f57c00 50%, #ef6c00 100%);
+            --success-gradient: linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+            --neon-green: #00c853;
+            --neon-blue: #2196f3;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Security Indicators */
+        .security-indicators {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .security-badge {
+            position: absolute;
+            background: var(--secure-gradient);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            animation: securityFloat 6s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes securityFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* Header */
+        .header-3d {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-3d {
+            background: var(--secure-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .security-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--neon-green);
+            font-size: 0.9rem;
+        }
+
+        .security-icon {
+            width: 20px;
+            height: 20px;
+            background: var(--secure-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 200, 83, 0.3); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 200, 83, 0.6); }
+        }
+
+        /* Progress Bar */
+        .checkout-progress {
+            background: var(--dark-glass);
+            backdrop-filter: blur(15px);
+            padding: 30px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secure-gradient);
+            width: 75%;
+            transition: width 0.8s ease;
+            border-radius: 2px;
+        }
+
+        .progress-step {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--glass-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.completed {
+            background: var(--secure-gradient);
+            border-color: var(--neon-green);
+            color: #fff;
+        }
+
+        .progress-step.active {
+            background: var(--payment-gradient);
+            border-color: var(--neon-blue);
+            color: #fff;
+            animation: activeStep 2s ease-in-out infinite;
+        }
+
+        @keyframes activeStep {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .step-label {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* Main Checkout Container */
+        .checkout-container {
+            padding: 60px 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Checkout Form */
+        .checkout-form {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkout-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 200, 83, 0.1), transparent);
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: var(--secure-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 200, 83, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.three-col {
+            grid-template-columns: 2fr 1fr 1fr;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .payment-method {
+            background: var(--dark-glass);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-method::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--payment-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .payment-method:hover::before,
+        .payment-method.active::before {
+            opacity: 0.1;
+        }
+
+        .payment-method:hover,
+        .payment-method.active {
+            border-color: var(--neon-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(33, 150, 243, 0.3);
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .payment-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 30px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: var(--payment-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .item-price {
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .summary-row.total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding-top: 15px;
+            border-top: 2px solid var(--glass-border);
+            color: var(--neon-green);
+        }
+
+        /* Action Buttons */
+        .checkout-actions {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .btn-3d {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-3d::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transition: all 0.4s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn-3d:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary-3d {
+            background: var(--secure-gradient);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.4);
+        }
+
+        .btn-primary-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 200, 83, 0.6);
+        }
+
+        .btn-secondary-3d {
+            background: var(--glass-bg);
+            color: #fff;
+            border: 2px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary-3d:hover {
+            background: var(--payment-gradient);
+            border-color: var(--neon-blue);
+            transform: translateY(-3px);
+        }
+
+        /* Security Features */
+        .security-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .security-feature {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .security-feature-icon {
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            margin-bottom: 10px;
+        }
+
+        .security-feature-text {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* Floating Action Button */
+        .fab-3d {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--secure-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .fab-3d:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(0, 200, 83, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .order-summary {
+                position: static;
+                order: -1;
+            }
+            
+            .checkout-form {
+                padding: 25px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-container {
+                padding: 0 20px;
+            }
+            
+            .step-label {
+                font-size: 0.7rem;
+            }
+            
+            .checkout-actions {
+                flex-direction: column;
+            }
+            
+            .fab-3d {
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* Loading Animation */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .processing-content {
+            text-align: center;
+            color: #fff;
+        }
+
+        .processing-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 200, 83, 0.3);
+            border-top: 3px solid var(--neon-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+    
+    <!-- Security Indicators -->
+    <div class="security-indicators" id="securityIndicators"></div>
+
+    <!-- Header -->
+    <header class="header-3d">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="logo-3d">
+                        <i class="fa fa-shield-alt"></i>
+                        Secure Checkout
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="security-status">
+                        <div class="security-icon">
+                            <i class="fa fa-lock"></i>
+                        </div>
+                        256-bit SSL Encryption
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/cart" style="color: #fff; margin-right: 20px;"><i class="fa fa-arrow-left"></i> Back to Cart</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <section class="checkout-progress">
+        <div class="container">
+            <div class="progress-container">
+                <div class="progress-line">
+                    <div class="progress-fill"></div>
+                </div>
+                
+                <div class="progress-step completed">
+                    <i class="fa fa-shopping-cart"></i>
+                    <div class="step-label">Cart</div>
+                </div>
+                
+                <div class="progress-step completed">
+                    <i class="fa fa-user"></i>
+                    <div class="step-label">Information</div>
+                </div>
+                
+                <div class="progress-step active">
+                    <i class="fa fa-credit-card"></i>
+                    <div class="step-label">Payment</div>
+                </div>
+                
+                <div class="progress-step">
+                    <i class="fa fa-check"></i>
+                    <div class="step-label">Complete</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Checkout -->
+    <section class="checkout-container">
+        <div class="container">
+            <div class="checkout-grid">
+                <!-- Checkout Form -->
+                <div class="checkout-form">
+                    <!-- Contact Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fa fa-user"></i>
+                            Contact Information
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" placeholder="your@email.com" value="user@example.com">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" placeholder="First Name" value="John">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" placeholder="Last Name" value="Doe">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fa fa-truck"></i>
+                            Shipping Address
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-input" placeholder="123 Main Street" value="123 Fashion Street">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" placeholder="City" value="New York">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State</label>
+                                <input type="text" class="form-input" placeholder="State" value="NY">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">ZIP Code</label>
+                                <input type="text" class="form-input" placeholder="12345" value="10001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-input" placeholder="Country" value="United States">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fa fa-credit-card"></i>
+                            Payment Method
+                        </h3>
+                        
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="card">
+                                <div class="payment-icon"><i class="fa fa-credit-card"></i></div>
+                                <div class="payment-label">Credit Card</div>
+                            </div>
+                            <div class="payment-method" data-method="paypal">
+                                <div class="payment-icon"><i class="fab fa-paypal"></i></div>
+                                <div class="payment-label">PayPal</div>
+                            </div>
+                            <div class="payment-method" data-method="apple">
+                                <div class="payment-icon"><i class="fab fa-apple"></i></div>
+                                <div class="payment-label">Apple Pay</div>
+                            </div>
+                        </div>
+
+                        <div id="cardDetails">
+                            <div class="form-group">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div class="form-row three-col">
+                                <div class="form-group">
+                                    <label class="form-label">Cardholder Name</label>
+                                    <input type="text" class="form-input" placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Expiry</label>
+                                    <input type="text" class="form-input" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-input" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Features -->
+                    <div class="security-features">
+                        <div class="security-feature">
+                            <div class="security-feature-icon"><i class="fa fa-shield-alt"></i></div>
+                            <div class="security-feature-text">SSL Encrypted</div>
+                        </div>
+                        <div class="security-feature">
+                            <div class="security-feature-icon"><i class="fa fa-lock"></i></div>
+                            <div class="security-feature-text">Secure Payment</div>
+                        </div>
+                        <div class="security-feature">
+                            <div class="security-feature-icon"><i class="fa fa-user-shield"></i></div>
+                            <div class="security-feature-text">Privacy Protected</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="checkout-actions">
+                        <button class="btn-3d btn-secondary-3d">
+                            <i class="fa fa-arrow-left"></i>
+                            Back to Cart
+                        </button>
+                        <button class="btn-3d btn-primary-3d" onclick="processPayment()">
+                            <i class="fa fa-lock"></i>
+                            Complete Order
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h3 class="summary-title">Order Summary</h3>
+                    
+                    <div class="order-item">
+                        <img src="../static/img/product2.jpg" alt="Product" class="item-image">
+                        <div class="item-details">
+                            <div class="item-name">Elegant Floral Cotton Kurti</div>
+                            <div class="item-price">$45.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-item">
+                        <img src="../static/img/jeans1.jpg" alt="Product" class="item-image">
+                        <div class="item-details">
+                            <div class="item-name">Classic Skinny Jeans</div>
+                            <div class="item-price">$65.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-item">
+                        <img src="../static/img/jumpsuit1.jpg" alt="Product" class="item-image">
+                        <div class="item-details">
+                            <div class="item-name">Elegant Evening Jumpsuit</div>
+                            <div class="item-price">$85.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>$195.00</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>$9.99</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Tax:</span>
+                        <span>$16.39</span>
+                    </div>
+                    
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span>$221.38</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <h3>Processing your order...</h3>
+            <p>Please wait while we securely process your payment</p>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <a href="/store" class="fab-3d" title="Continue Shopping">
+        <i class="fa fa-shopping-bag"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/chatBot.js"></script>
+
+    <script>
+        // Initialize 3D background
+        function init3DBackground() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create security-themed geometries
+            const geometries = [
+                new THREE.DodecahedronGeometry(0.8),
+                new THREE.IcosahedronGeometry(0.7),
+                new THREE.OctahedronGeometry(0.9),
+                new THREE.TetrahedronGeometry(1)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0x00c853, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x2196f3, wireframe: true, transparent: true, opacity: 0.3 }),
+                new THREE.MeshBasicMaterial({ color: 0x4caf50, wireframe: true, transparent: true, opacity: 0.3 })
+            ];
+
+            const meshes = [];
+            for (let i = 0; i < 15; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 30;
+                mesh.position.y = (Math.random() - 0.5) * 30;
+                mesh.position.z = (Math.random() - 0.5) * 30;
+                
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 18;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += 0.002 + index * 0.0003;
+                    mesh.rotation.y += 0.002 + index * 0.0003;
+                    mesh.position.y += Math.sin(Date.now() * 0.001 + index) * 0.005;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize security indicators
+        function initSecurityIndicators() {
+            const container = document.getElementById('securityIndicators');
+            const badges = ['🔒 SECURE', '🛡️ PROTECTED', '✓ VERIFIED', '🔐 ENCRYPTED'];
+            
+            badges.forEach((badge, index) => {
+                const element = document.createElement('div');
+                element.className = 'security-badge';
+                element.textContent = badge;
+                element.style.left = Math.random() * 80 + 10 + '%';
+                element.style.top = Math.random() * 80 + 10 + '%';
+                element.style.animationDelay = index * 1.5 + 's';
+                container.appendChild(element);
+            });
+        }
+
+        // Payment method selection
+        function initPaymentMethods() {
+            const methods = document.querySelectorAll('.payment-method');
+            const cardDetails = document.getElementById('cardDetails');
+            
+            methods.forEach(method => {
+                method.addEventListener('click', () => {
+                    methods.forEach(m => m.classList.remove('active'));
+                    method.classList.add('active');
+                    
+                    const methodType = method.getAttribute('data-method');
+                    
+                    if (methodType === 'card') {
+                        cardDetails.style.display = 'block';
+                    } else {
+                        cardDetails.style.display = 'none';
+                    }
+                    
+                    gsap.fromTo(method, 
+                        { scale: 1 },
+                        { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1, ease: "power2.out" }
+                    );
+                });
+            });
+        }
+
+        // Form validation and formatting
+        function initFormHandling() {
+            // Card number formatting
+            const cardNumberInput = document.querySelector('input[placeholder="1234 5678 9012 3456"]');
+            if (cardNumberInput) {
+                cardNumberInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    e.target.value = value;
+                });
+            }
+
+            // Expiry date formatting
+            const expiryInput = document.querySelector('input[placeholder="MM/YY"]');
+            if (expiryInput) {
+                expiryInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            // CVV validation
+            const cvvInput = document.querySelector('input[placeholder="123"]');
+            if (cvvInput) {
+                cvvInput.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                });
+            }
+        }
+
+        // Process payment
+        function processPayment() {
+            const overlay = document.getElementById('processingOverlay');
+            overlay.style.display = 'flex';
+            
+            // Animate progress
+            gsap.to('.progress-fill', {
+                width: '100%',
+                duration: 3,
+                ease: "power2.out"
+            });
+            
+            // Complete the last step
+            setTimeout(() => {
+                const lastStep = document.querySelectorAll('.progress-step')[3];
+                lastStep.classList.add('completed');
+                lastStep.classList.remove('active');
+                
+                const activeStep = document.querySelector('.progress-step.active');
+                activeStep.classList.add('completed');
+                activeStep.classList.remove('active');
+            }, 2000);
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Redirect to order confirmation page
+                window.location.href = '/order-confirmation';
+            }, 4000);
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            initSecurityIndicators();
+            initPaymentMethods();
+            initFormHandling();
+            
+            // Add form field animations
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('focus', () => {
+                    gsap.to(input, {
+                        scale: 1.02,
+                        duration: 0.2,
+                        ease: "power2.out"
+                    });
+                });
+                
+                input.addEventListener('blur', () => {
+                    gsap.to(input, {
+                        scale: 1,
+                        duration: 0.2,
+                        ease: "power2.out"
+                    });
+                });
+            });
+            
+            // Animate form sections on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, y: 30 },
+                            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+                        );
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.form-section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
