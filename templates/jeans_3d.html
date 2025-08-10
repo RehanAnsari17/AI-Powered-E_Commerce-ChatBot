@@ -614,6 +614,9 @@
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be dynamically loaded here -->
             </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="seeMoreBtn" class="btn-3d btn-secondary-3d" style="padding:12px 30px;">See more</button>
+            </div>
         </div>
     </section>
 
@@ -684,72 +687,72 @@
     <script src="../static/js/bootstrap.min.js"></script>
 
     <script>
-        // Sample jeans data
-        const jeansProducts = [
+        // Real jeans data from original jeans.html
+        const jeansStatic = [
             {
                 id: 1,
-                name: "Classic Skinny Jeans",
+                name: "Classic Blue Skinny Jeans",
                 category: "Jeans",
                 type: "skinny",
                 price: 65.00,
                 oldPrice: 85.00,
                 image: "../static/img/jeans1.jpg",
-                labels: ["BESTSELLER", "24% OFF"],
-                rating: 4.7,
+                labels: ["SALE", "30% OFF", "NEW"],
+                rating: 5.0,
                 features: ["Stretch", "High-Waist", "Fade-Resistant"],
-                description: "Premium skinny jeans with stretch denim for ultimate comfort"
+                description: "Premium classic blue skinny jeans with stretch comfort"
             },
             {
                 id: 2,
-                name: "High-Waist Mom Jeans",
+                name: "Vintage High-Waist Jeans",
                 category: "Jeans",
                 type: "straight",
                 price: 70.00,
                 oldPrice: 90.00,
                 image: "../static/img/jeans2.jpg",
-                labels: ["TRENDING", "22% OFF"],
-                rating: 4.8,
+                labels: ["NEW"],
+                rating: 4.0,
                 features: ["High-Waist", "Vintage", "Cotton Blend"],
-                description: "Vintage-inspired mom jeans with a comfortable high-waist fit"
+                description: "Retro-inspired high-waist jeans with vintage appeal"
             },
             {
                 id: 3,
-                name: "Bootcut Dark Wash",
+                name: "Dark Wash Straight Jeans",
                 category: "Jeans",
-                type: "bootcut",
+                type: "straight",
                 price: 58.00,
                 oldPrice: 75.00,
                 image: "../static/img/jeans3.jpg",
                 labels: ["CLASSIC"],
                 rating: 4.5,
-                features: ["Bootcut", "Dark Wash", "Mid-Rise"],
-                description: "Timeless bootcut jeans perfect for pairing with boots"
+                features: ["Dark Wash", "Straight Leg", "Mid-Rise"],
+                description: "Classic dark wash straight leg jeans for everyday wear"
             },
             {
                 id: 4,
-                name: "Distressed Straight Leg",
+                name: "Distressed Denim Jeans",
                 category: "Jeans",
                 type: "straight",
                 price: 72.00,
                 oldPrice: 95.00,
                 image: "../static/img/jeans4.jpg",
-                labels: ["EDGY", "24% OFF"],
+                labels: ["EDGY"],
                 rating: 4.4,
                 features: ["Distressed", "Straight Leg", "Premium Denim"],
-                description: "Edgy distressed jeans with authentic wear patterns"
+                description: "Trendy distressed jeans with authentic worn details"
             },
             {
                 id: 5,
-                name: "Wide Leg Flare",
+                name: "Relaxed Fit Blue Jeans",
                 category: "Jeans",
                 type: "wide",
                 price: 68.00,
                 oldPrice: 88.00,
                 image: "../static/img/jeans5.jpg",
-                labels: ["RETRO", "23% OFF"],
+                labels: ["COMFORTABLE"],
                 rating: 4.6,
-                features: ["Wide Leg", "Flare", "70s Inspired"],
-                description: "Retro-inspired wide leg jeans with a dramatic flare"
+                features: ["Relaxed Fit", "Comfortable", "Casual"],
+                description: "Comfortable relaxed fit jeans for casual days"
             },
             {
                 id: 6,
@@ -759,13 +762,56 @@
                 price: 95.00,
                 oldPrice: 120.00,
                 image: "../static/img/jeans6.jpg",
-                labels: ["PREMIUM", "21% OFF"],
+                labels: ["PREMIUM"],
                 rating: 4.9,
-                features: ["Raw Denim", "Selvedge", "Japanese Cotton"],
-                description: "Luxury raw denim jeans for the true denim enthusiast"
+                features: ["Raw Denim", "Premium", "Selvedge"],
+                description: "High-quality raw denim jeans for denim enthusiasts"
+            },
+            {
+                id: 7,
+                name: "Light Wash Bootcut Jeans",
+                category: "Jeans",
+                type: "bootcut",
+                price: 62.00,
+                oldPrice: 80.00,
+                image: "../static/img/jeans7.jpg",
+                labels: ["BESTSELLER"],
+                rating: 5.0,
+                features: ["Light Wash", "Bootcut", "Versatile"],
+                description: "Versatile light wash bootcut jeans with perfect fit"
+            },
+            {
+                id: 8,
+                name: "Medium Wash Slim Jeans",
+                category: "Jeans",
+                type: "skinny",
+                price: 58.00,
+                oldPrice: 75.00,
+                image: "../static/img/jeans8.jpg",
+                labels: ["SLIM FIT"],
+                rating: 4.2,
+                features: ["Medium Wash", "Slim Fit", "Tapered"],
+                description: "Modern slim fit jeans with medium wash finish"
+            },
+            {
+                id: 9,
+                name: "Designer Wide Leg Jeans",
+                category: "Jeans",
+                type: "wide",
+                price: 78.00,
+                oldPrice: 95.00,
+                image: "../static/img/jeans9.jpg",
+                labels: ["DESIGNER"],
+                rating: 4.7,
+                features: ["Wide Leg", "Designer", "Statement"],
+                description: "Statement wide leg jeans with designer styling"
             }
         ];
 
+        let jeansProducts = [];
+        let filteredProducts = [];
+        let nextOffset = null;
+        const PAGE_LIMIT = 48;
         let currentFilter = 'all';
 
         // Initialize 3D background
@@ -830,46 +876,52 @@
             });
         }
 
-        // Render products
-        function renderProducts(products) {
+        // Render products (supports append)
+        function renderProducts(products, append = false) {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = products.map(product => `
-                <div class="product-card-3d" data-type="${product.type}">
+            const html = products.map(product => `
+                <div class="product-card-3d" data-type="${product.type || 'straight'}">
                     <div class="product-image-container">
-                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <img src="${product.image || product.image_url}" alt="${product.name || product.productDisplayName || 'Jeans'}" class="product-image">
                         <div class="product-labels">
-                            ${product.labels.map(label => `
+                            ${(product.labels || []).map(label => `
                                 <span class="product-label ${label.toLowerCase().includes('sale') || label.includes('OFF') ? 'sale' : label.toLowerCase().includes('new') ? 'new' : ''}">${label}</span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="product-info">
-                        <p class="product-category">${product.category}</p>
-                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-category">${product.category || product.masterCategory || 'Jeans'}</p>
+                        <h3 class="product-name">${product.name || product.productDisplayName || 'Jeans'}</h3>
                         <div class="product-price">
-                            $${product.price.toFixed(2)}
-                            ${product.oldPrice ? `<span class="old-price">$${product.oldPrice.toFixed(2)}</span>` : ''}
+                            $${(product.price || Math.random()*100).toFixed(2)}
+                            ${product.oldPrice ? `<span class="old-price">$${(product.oldPrice).toFixed(2)}</span>` : ''}
                         </div>
                         <div class="product-rating">
                             ${Array.from({length: 5}, (_, i) => `
-                                <i class="fa fa-star${i < Math.floor(product.rating) ? '' : (i < product.rating ? '-half' : '-o')}"></i>
+                                <i class="fa fa-star${i < Math.floor(product.rating || 4.5) ? '' : (i < (product.rating || 4.5) ? '-half' : '-o')}"></i>
                             `).join('')}
-                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${product.rating})</span>
+                            <span style="margin-left: 8px; color: rgba(255,255,255,0.7);">(${(product.rating || 4.5).toFixed(1)})</span>
                         </div>
                         <div class="product-features">
-                            ${product.features.map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                            ${(product.features || []).map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
                         </div>
                         <div class="product-actions">
-                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id})">
+                            <button class="btn-3d btn-primary-3d" onclick="addToCart(${product.id || 0})">
                                 <i class="fa fa-shopping-cart"></i> Add to Cart
                             </button>
-                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id})">
+                            <button class="btn-3d btn-secondary-3d" onclick="quickView(${product.id || 0})">
                                 <i class="fa fa-eye"></i> View
                             </button>
                         </div>
                     </div>
                 </div>
             `).join('');
+
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
 
             // Animate cards
             gsap.fromTo('.product-card-3d', 
@@ -911,21 +963,53 @@
             });
             
             setTimeout(() => {
-                alert(`Added "${product.name}" to cart!`);
+                alert(`Added "${product.name || product.productDisplayName}" to cart!`);
             }, 200);
         }
 
         // Quick view
         function quickView(productId) {
             const product = jeansProducts.find(p => p.id === productId);
-            alert(`${product.name}\n\n${product.description}\n\nFeatures: ${product.features.join(', ')}\n\nPrice: $${product.price.toFixed(2)}\nRating: ${product.rating}/5`);
+            alert(`${product.name || product.productDisplayName}\n\n${(product.description || '')}\n\nFeatures: ${(product.features || []).join(', ')}\n\nPrice: $${(product.price || Math.random()*100).toFixed(2)}\nRating: ${(product.rating || 4.5)}/5`);
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             init3DBackground();
-            renderProducts(jeansProducts);
-            
+
+            (async () => {
+                try {
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    const res = await fetch(`/api/jeans?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        jeansProducts = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || i,
+                            type: 'straight',
+                            rating: 4.5,
+                            features: [],
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Jeans',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        filteredProducts = [...jeansProducts];
+                        nextOffset = data.next_offset || null;
+                        renderProducts(filteredProducts);
+                    } else {
+                        filteredProducts = jeansProducts;
+                        renderProducts(filteredProducts);
+                    }
+                } catch (e) {
+                    filteredProducts = jeansProducts;
+                    renderProducts(filteredProducts);
+                }
+            })();
+
             // Add type card event listeners
             document.querySelectorAll('.type-card').forEach(card => {
                 card.addEventListener('click', () => {
@@ -952,6 +1036,37 @@
                     });
                 });
             });
+
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            if (seeMoreBtn) {
+                seeMoreBtn.addEventListener('click', async () => {
+                    if (!nextOffset) return;
+                    const params = new URLSearchParams();
+                    params.set('gender', 'Women');
+                    params.set('page_limit', String(PAGE_LIMIT));
+                    params.set('page_offset', String(nextOffset));
+                    const res = await fetch(`/api/jeans?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.results && data.results.length) {
+                        const extra = data.results.map((p, i) => ({
+                            ...p,
+                            id: p.id || `${Date.now()}_${i}`,
+                            type: 'straight',
+                            rating: 4.5,
+                            features: [],
+                            name: p.productDisplayName,
+                            image: p.image_url,
+                            category: p.masterCategory || 'Jeans',
+                            price: Math.random()*100,
+                            labels: [],
+                        }));
+                        jeansProducts = jeansProducts.concat(extra);
+                        filteredProducts = jeansProducts;
+                        nextOffset = data.next_offset || null;
+                        renderProducts(extra, true);
+                    }
+                });
+            }
         });
     </script>
 </body>
