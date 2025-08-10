@@ -11,7 +11,7 @@ Extract and infer relevant information about the customer's primary product requ
 
 ## GUIDELINES ##
 1. Category: Choose ONE from Indian Wear, Plus Size, Western, Sports Wear, Inner Wear & Sleep Wear, Lingerie & Sleep Wear. If none fit, use "Other". If multiple categories apply, choose the most relevant for the main product.
-2. Individual Category: Choose ONE from kurta-sets, kurtas, tops, thermal-tops, jeans, skirts, shorts, trousers, palazzos, jumpsuit, co-ords, clothing-set, kurtis, tunics. If none fit, use "Other".
+2. Individual Category: Choose ONE from kurta-sets, kurtas, tops, thermal-tops, jeans, skirts, shorts, trousers, palazzos, jumpsuit, co-ords, clothing-set, kurtis, tunics, saree, lehengas, anarkalis, salwar-kameez, dupattas, blouses, ethnic-dresses, traditional-wear. If none fit, use "Other".
 3. Category by Gender: Choose Women or Men. If unclear, use your best judgment.
 4. Colour: Choose from Black, Orange, Navy Blue, Red, Beige, Yellow, Green, Mustard, Teal, Peach, Blue, Sea Green, Pink, Burgundy, Maroon, Lavender, Purple, White, Grey, Lime Green, Brown, Cream, Rust, Off White, Turquoise Blue, Multi, Mauve, Assorted, Magenta, Fuchsia, Coral, Olive, Rose, Gold, Fluorescent Green, Silver, Nude, Violet, Charcoal, Grey Melange, Khaki, Coffee Brown, Taupe, Copper. If unclear or not listed, use "Other".
 
@@ -28,6 +28,7 @@ Extract and infer relevant information about the customer's primary product requ
 - Respond ONLY for fashion-related products.
 - Do not invent fields or make assumptions outside the provided options.
 - Use "NA" if something cannot be inferred or is missing.
+- Map similar terms: "saree" = "saree", "kurta" = "kurtas", "kurti" = "kurtis", "dress" = "ethnic-dresses"
 
 ## OUTPUT FORMAT ##
 Respond in this exact format:
