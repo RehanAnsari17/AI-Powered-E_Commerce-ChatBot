@@ -14,12 +14,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-api_key = os.getenv("GROQ_API_KEY")
+# api_key = os.getenv("GROQ_API_KEY")
 
 llm = ChatGroq(
     temperature = TEMPERATURE,
-    groq_api_key = api_key,
-    model_name = "llama3-8b-8192"
+    groq_api_key = "add urs",
+    model_name = "ur wish"  #mine - llama-3.1-8b-instant
 )
 
 # ---------- ROUTES ----------
@@ -94,7 +94,8 @@ def api_kurtis():
     for it in page["items"]:
         normalized.append({
             "id": it.get("id") or it.get("product_id") or it.get("name"),
-            "image_url": it.get("image_url"),
+            # ✅ Use image_link if available, fallback to image_url
+            "image_url": it.get("image_link") or it.get("image_url"),
             "gender": it.get("gender"),
             "masterCategory": it.get("masterCategory") or it.get("Category"),
             "subCategory": it.get("subCategory"),
@@ -113,6 +114,7 @@ def api_skirts():
     page_limit = request.args.get("page_limit", default=48, type=int)
     page_offset = request.args.get("page_offset")
     article_type = request.args.get("article_type") or None
+
     if page_offset == "None":
         page_offset = None
 
@@ -129,7 +131,8 @@ def api_skirts():
     for it in page["items"]:
         normalized.append({
             "id": it.get("id") or it.get("product_id") or it.get("name"),
-            "image_url": it.get("image_url"),
+            # ✅ normalize image field (image_link or image_url)
+            "image_url": it.get("image_link") or it.get("image_url"),
             "gender": it.get("gender"),
             "masterCategory": it.get("masterCategory") or it.get("Category"),
             "subCategory": it.get("subCategory"),
@@ -148,10 +151,14 @@ def api_jeans():
     page_limit = request.args.get("page_limit", default=48, type=int)
     page_offset = request.args.get("page_offset")
     article_type = request.args.get("article_type") or None
+
     if page_offset == "None":
         page_offset = None
 
-    items_like = ["Jeans", "jeans", "Skinny Jeans", "Straight Jeans", "Bootcut Jeans", "Wide Leg Jeans"]
+    items_like = [
+        "Jeans", "jeans", "Skinny Jeans", "Straight Jeans",
+        "Bootcut Jeans", "Wide Leg Jeans"
+    ]
     page = fetch_by_filters_page(
         article_types=[article_type] if article_type else items_like,
         base_colour=colour,
@@ -164,7 +171,8 @@ def api_jeans():
     for it in page["items"]:
         normalized.append({
             "id": it.get("id") or it.get("product_id") or it.get("name"),
-            "image_url": it.get("image_url"),
+            # ✅ normalize image (support image_link or image_url)
+            "image_url": it.get("image_link") or it.get("image_url"),
             "gender": it.get("gender"),
             "masterCategory": it.get("masterCategory") or it.get("Category"),
             "subCategory": it.get("subCategory"),
@@ -175,7 +183,6 @@ def api_jeans():
 
     return jsonify({"results": normalized, "next_offset": page.get("next_offset")})
 
-
 @app.route("/api/jumpsuits", methods=["GET"])
 def api_jumpsuits():
     colour = request.args.get("colour") or None
@@ -183,6 +190,7 @@ def api_jumpsuits():
     page_limit = request.args.get("page_limit", default=48, type=int)
     page_offset = request.args.get("page_offset")
     article_type = request.args.get("article_type") or None
+
     if page_offset == "None":
         page_offset = None
 
@@ -199,7 +207,8 @@ def api_jumpsuits():
     for it in page["items"]:
         normalized.append({
             "id": it.get("id") or it.get("product_id") or it.get("name"),
-            "image_url": it.get("image_url"),
+            # ✅ normalize image
+            "image_url": it.get("image_link") or it.get("image_url"),
             "gender": it.get("gender"),
             "masterCategory": it.get("masterCategory") or it.get("Category"),
             "subCategory": it.get("subCategory"),
